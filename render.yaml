@@ -15,12 +15,6 @@ services:
         fromDatabase:
           name: sistema-professor-db
           property: connectionString
-      # Login do professor — sync: false faz o Render pedir o valor no
-      # dashboard em vez de ler do repositório (nunca commitamos senha).
-      - key: LOGIN_USUARIO
-        sync: false
-      - key: LOGIN_SENHA
-        sync: false
       # Só True em produção (o Render fornece HTTPS); em dev local por
       # http:// isso quebraria o cookie de sessão.
       - key: SESSION_COOKIE_SECURE

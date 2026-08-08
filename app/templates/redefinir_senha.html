@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redefinir senha · Sistema de Gestão de Aulas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="pagina-login">
+  <a class="skip-link" href="#conteudo-redefinir">Pular para o conteúdo principal</a>
+
+  <main id="conteudo-redefinir" class="login-wrapper" tabindex="-1">
+    <div class="login-cartao">
+      <a class="marca marca-login" href="{{ url_for('views.landing') }}">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+          <rect width="24" height="24" rx="7" fill="#3454d1"/>
+          <path d="M12 6.2l7.4 3.35L12 12.9l-7.4-3.35L12 6.2z" fill="#fff"/>
+          <path d="M6.8 11v3.6c0 1.35 2.15 2.5 5.2 2.5s5.2-1.15 5.2-2.5V11" stroke="#fff" stroke-width="1.3" fill="none"/>
+        </svg>
+        <span>Gestão de Aulas</span>
+      </a>
+
+      <h2>Escolher nova senha</h2>
+      <p class="login-subtitulo">Defina uma nova senha para sua conta.</p>
+
+      {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+          <div class="mensagens" aria-live="polite">
+            {% for categoria, mensagem in mensagens %}
+              <p class="mensagem mensagem-{{ categoria }}" role="status">{{ mensagem }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="{{ url_for('auth.redefinir_senha', token=token) }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="campo">
+          <label for="senha">Nova senha</label>
+          <input type="password" id="senha" name="senha" required aria-required="true" minlength="8" autocomplete="new-password" autofocus aria-describedby="ajuda-senha">
+          <small id="ajuda-senha">Pelo menos 8 caracteres.</small>
+        </div>
+        <div class="campo">
+          <label for="confirmar_senha">Confirmar nova senha</label>
+          <input type="password" id="confirmar_senha" name="confirmar_senha" required aria-required="true" minlength="8" autocomplete="new-password">
+        </div>
+
+        <button type="submit" class="btn login-botao">Redefinir senha</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

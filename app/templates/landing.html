@@ -27,7 +27,7 @@
       <nav aria-label="Navegação da página inicial" class="landing-links">
         <a href="#funcionalidades">Funcionalidades</a>
         <a href="#como-funciona">Como funciona</a>
-        <a href="{{ url_for('views.landing', login=1) }}#login" class="btn abrir-login">Acessar sistema</a>
+        <a href="{{ url_for('views.landing', login=1) }}#login" class="btn abrir-login link-painel" data-painel="entrar">Acessar sistema</a>
       </nav>
     </div>
   </header>
@@ -44,7 +44,7 @@
             soltas ou cadernos espalhados.
           </p>
           <div class="hero-acoes">
-            <a href="{{ url_for('views.landing', login=1) }}#login" class="btn btn-grande abrir-login">Acessar sistema</a>
+            <a href="{{ url_for('views.landing', login=1) }}#login" class="btn btn-grande abrir-login link-painel" data-painel="entrar">Acessar sistema</a>
             <a href="#funcionalidades" class="btn-fantasma">Ver funcionalidades</a>
           </div>
           <p class="hero-nota">
@@ -173,7 +173,7 @@
       <div class="landing-largura cta-final-conteudo">
         <h2>Pronto para organizar sua rotina de aulas?</h2>
         <p>Comece a usar agora — é gratuito e leva menos de um minuto para cadastrar seu primeiro aluno.</p>
-        <a href="{{ url_for('views.landing', login=1) }}#login" class="btn btn-grande btn-claro abrir-login">Acessar sistema</a>
+        <a href="{{ url_for('views.landing', login=1) }}#login" class="btn btn-grande btn-claro abrir-login link-painel" data-painel="entrar">Acessar sistema</a>
       </div>
     </section>
   </main>
@@ -184,18 +184,16 @@
     </div>
   </footer>
 
-  <!-- Login embutido na própria landing page: sem navegar para uma URL
-       separada, o professor entra direto por aqui. Sem JavaScript, o link
-       "Acessar sistema" (?login=1) já faz o servidor renderizar isto
-       visível; com JS, main.js intercepta o clique e abre na hora. -->
-  <div id="login" class="login-modal-fundo" role="dialog" aria-modal="true" aria-labelledby="titulo-login" {{ "" if mostrar_login else "hidden" }}>
+  <!-- Login/cadastro/esqueci-senha embutidos na própria landing page: sem
+       navegar para uma URL separada, tudo acontece aqui, alternando entre
+       3 painéis. Sem JavaScript, os links (?login=1 / ?cadastro=1 /
+       ?esqueci=1) já fazem o servidor renderizar o painel certo visível;
+       com JS, landing.js alterna entre eles na hora. -->
+  <div id="login" class="login-modal-fundo" role="dialog" aria-modal="true" {{ "" if painel_ativo else "hidden" }}>
     <div class="login-cartao">
-      <button type="button" id="fechar-login" class="login-fechar" aria-label="Fechar formulário de login">
+      <button type="button" id="fechar-login" class="login-fechar" aria-label="Fechar">
         <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4l12 12M16 4 4 16"/></svg>
       </button>
-
-      <h2 id="titulo-login">Entrar</h2>
-      <p class="login-subtitulo">Acesso restrito ao professor responsável.</p>
 
       {% with mensagens = get_flashed_messages(with_categories=true) %}
         {% if mensagens %}
@@ -207,21 +205,85 @@
         {% endif %}
       {% endwith %}
 
-      <form method="post" action="{{ url_for('auth.login') }}" novalidate>
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="proximo" value="{{ proximo }}">
+      <!-- Painel: entrar -->
+      <div id="painel-entrar" class="painel-auth" {{ "" if painel_ativo == "entrar" else "hidden" }}>
+        <h2>Entrar</h2>
+        <p class="login-subtitulo">Acesse sua conta de professor.</p>
 
-        <div class="campo">
-          <label for="usuario">Usuário</label>
-          <input type="text" id="usuario" name="usuario" required aria-required="true" autocomplete="username">
-        </div>
-        <div class="campo">
-          <label for="senha">Senha</label>
-          <input type="password" id="senha" name="senha" required aria-required="true" autocomplete="current-password">
-        </div>
+        <form method="post" action="{{ url_for('auth.login') }}" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="proximo" value="{{ proximo }}">
 
-        <button type="submit" class="btn login-botao">Entrar</button>
-      </form>
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" required aria-required="true" autocomplete="email">
+          </div>
+          <div class="campo">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" required aria-required="true" autocomplete="current-password">
+          </div>
+
+          <button type="submit" class="btn login-botao">Entrar</button>
+        </form>
+        <p class="login-links">
+          <a href="{{ url_for('views.landing', esqueci=1) }}#login" class="link-painel" data-painel="esqueci">Esqueceu a senha?</a>
+          &middot;
+          <a href="{{ url_for('views.landing', cadastro=1) }}#login" class="link-painel" data-painel="cadastro">Criar conta</a>
+        </p>
+      </div>
+
+      <!-- Painel: criar conta -->
+      <div id="painel-cadastro" class="painel-auth" {{ "" if painel_ativo == "cadastro" else "hidden" }}>
+        <h2>Criar conta</h2>
+        <p class="login-subtitulo">Leva menos de um minuto.</p>
+
+        <form method="post" action="{{ url_for('auth.cadastro') }}" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="campo">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" required aria-required="true" autocomplete="name">
+          </div>
+          <div class="campo">
+            <label for="email-cadastro">E-mail</label>
+            <input type="email" id="email-cadastro" name="email" required aria-required="true" autocomplete="email">
+          </div>
+          <div class="campo">
+            <label for="senha-cadastro">Senha</label>
+            <input type="password" id="senha-cadastro" name="senha" required aria-required="true" minlength="8" autocomplete="new-password" aria-describedby="ajuda-senha-cadastro">
+            <small id="ajuda-senha-cadastro">Pelo menos 8 caracteres.</small>
+          </div>
+          <div class="campo">
+            <label for="confirmar-senha">Confirmar senha</label>
+            <input type="password" id="confirmar-senha" name="confirmar_senha" required aria-required="true" minlength="8" autocomplete="new-password">
+          </div>
+
+          <button type="submit" class="btn login-botao">Criar conta</button>
+        </form>
+        <p class="login-links">
+          <a href="{{ url_for('views.landing', login=1) }}#login" class="link-painel" data-painel="entrar">Já tem conta? Entrar</a>
+        </p>
+      </div>
+
+      <!-- Painel: esqueci a senha -->
+      <div id="painel-esqueci" class="painel-auth" {{ "" if painel_ativo == "esqueci" else "hidden" }}>
+        <h2>Redefinir senha</h2>
+        <p class="login-subtitulo">Informe seu e-mail — enviaremos um link para você escolher uma nova senha.</p>
+
+        <form method="post" action="{{ url_for('auth.esqueci_senha') }}" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="campo">
+            <label for="email-esqueci">E-mail</label>
+            <input type="email" id="email-esqueci" name="email" required aria-required="true" autocomplete="email">
+          </div>
+
+          <button type="submit" class="btn login-botao">Enviar link</button>
+        </form>
+        <p class="login-links">
+          <a href="{{ url_for('views.landing', login=1) }}#login" class="link-painel" data-painel="entrar">Voltar para login</a>
+        </p>
+      </div>
     </div>
   </div>
 

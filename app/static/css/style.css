@@ -157,6 +157,16 @@ textarea:focus-visible {
 }
 
 .sidebar-rodape { margin-top: auto; }
+.usuario-logado {
+  color: var(--sidebar-texto-ativo);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.6rem;
+  padding: 0 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 #alternar-tema {
   width: 100%;
@@ -319,6 +329,9 @@ section h2 {
   border-radius: 12px;
   box-shadow: var(--sombra);
   padding: 1.3rem 1.4rem;
+  /* tabelas com muitas colunas (ex.: Agenda) rolam dentro do próprio
+     cartão em vez de estourar a largura da página em telas estreitas. */
+  overflow-x: auto;
 }
 
 /* ---------------------------------------------------------------- tabelas */
@@ -468,7 +481,10 @@ table a:hover { text-decoration: underline; }
 
 .grade-graficos {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr) — não usar "1fr" puro: sem o mínimo explícito em 0, a
+     coluna nunca encolhe além do conteúdo (o <canvas width="600"> do
+     Chart.js), estourando a largura da página inteira. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.5rem;
 }
 
@@ -485,7 +501,9 @@ table a:hover { text-decoration: underline; }
   border-radius: 12px;
   box-shadow: var(--sombra);
   padding: 1.4rem 1.6rem;
+  min-width: 0;
 }
+.grafico-cartao canvas { max-width: 100%; height: auto; }
 
 .estado-vazio {
   text-align: center;
@@ -541,6 +559,40 @@ table a:hover { text-decoration: underline; }
 .login-cartao h2 { margin: 0 0 0.3rem; font-size: 1.4rem; }
 .login-subtitulo { margin: 0 0 1.3rem; color: var(--texto-suave); font-size: 0.9rem; }
 .login-botao { width: 100%; justify-content: center; margin-top: 0.3rem; }
+
+/* Página cheia usada só por redefinir_senha.html — chegamos nela por um
+   link de e-mail, fora do contexto do site, então faz sentido ser uma
+   página própria (diferente do login/cadastro, que ficam no modal acima). */
+.pagina-login {
+  min-height: 100vh;
+  display: flex;
+}
+.login-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.marca-login {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--texto);
+  text-decoration: none;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.painel-auth[hidden] { display: none; }
+.login-links {
+  text-align: center;
+  margin: 1.1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+.login-links a { color: var(--primaria); text-decoration: none; font-weight: 600; }
+.login-links a:hover { text-decoration: underline; }
 
 /* --------------------------------------------------------------- responsivo */
 @media (max-width: 900px) {

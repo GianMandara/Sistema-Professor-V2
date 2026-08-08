@@ -8,7 +8,7 @@ from datetime import date, datetime
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from ..extensions import db
-from ..models import Aluno, Aula, Conteudo
+from ..models import Aluno, Aula, Conteudo, Usuario
 from ..services.email import enviar_lembrete_aula
 
 views_bp = Blueprint("views", __name__)
@@ -22,11 +22,17 @@ _ROTAS_PUBLICAS = {"views.landing"}
 def exigir_login():
     if request.endpoint in _ROTAS_PUBLICAS:
         return None
-    if not session.get("autenticado"):
+    if not session.get("usuario_id"):
         # O login fica embutido na própria landing page (não em uma URL
         # separada) — login=1 faz a seção de login já aparecer visível.
         return redirect(url_for("views.landing", login="1", proximo=request.path))
     return None
+
+
+@views_bp.context_processor
+def injetar_usuario_atual():
+    usuario_id = session.get("usuario_id")
+    return {"usuario_atual": db.session.get(Usuario, usuario_id) if usuario_id else None}
 
 DIAS_SEMANA = [
     "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
@@ -53,15 +59,26 @@ def _saudacao(hora: int) -> str:
 
 @views_bp.get("/")
 def landing():
-    """Landing page pública — apresenta o produto e também é onde o login
-    acontece (seção embutida, sem navegar para uma URL separada)."""
+    """Landing page pública — apresenta o produto e também é onde o
+    professor entra, cria conta ou pede redefinição de senha (tudo
+    embutido em um modal, sem navegar para uma URL separada)."""
     total_alunos = Aluno.query.count()
     total_aulas = Aula.query.count()
+
+    if request.args.get("cadastro") == "1":
+        painel_ativo = "cadastro"
+    elif request.args.get("esqueci") == "1":
+        painel_ativo = "esqueci"
+    elif request.args.get("login") == "1":
+        painel_ativo = "entrar"
+    else:
+        painel_ativo = None
+
     return render_template(
         "landing.html",
         total_alunos=total_alunos,
         total_aulas=total_aulas,
-        mostrar_login=request.args.get("login") == "1",
+        painel_ativo=painel_ativo,
         proximo=request.args.get("proximo", ""),
     )
 

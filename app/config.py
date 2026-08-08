@@ -47,12 +47,6 @@ class Config:
     MAIL_REMETENTE = os.environ.get("MAIL_REMETENTE", "") or MAIL_USERNAME
     MAIL_HABILITADO = bool(MAIL_SERVER and MAIL_USERNAME)
 
-    # Login único do professor. Sem os dois preenchidos, o login fica
-    # desativado por padrão fail-closed (ninguém consegue entrar) — nunca
-    # fail-open. Ver app/routes/auth.py.
-    LOGIN_USUARIO = os.environ.get("LOGIN_USUARIO", "")
-    LOGIN_SENHA = os.environ.get("LOGIN_SENHA", "")
-
     # Cookies de sessão mais seguros. SESSION_COOKIE_SECURE só pode ser True
     # atrás de HTTPS (Render fornece isso em produção); em dev local por
     # http://, deixe False, senão o navegador nunca envia o cookie de volta.
@@ -65,8 +59,6 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
-    LOGIN_USUARIO = "teste"
-    LOGIN_SENHA = "teste123"
 
     # Testes nunca devem depender (nem ser afetados) por segredos reais que
     # existam no .env local do desenvolvedor — e-mail é sempre desativado

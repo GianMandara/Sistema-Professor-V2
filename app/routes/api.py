@@ -15,7 +15,7 @@ api_bp = Blueprint("api", __name__)
 
 @api_bp.before_request
 def exigir_login_api():
-    if not session.get("autenticado"):
+    if not session.get("usuario_id"):
         return jsonify({"erro": "Não autenticado."}), 401
     return None
 

@@ -18,7 +18,7 @@ requisitos abaixo. **Este código vive em uma pasta separada
 | Testes | [`pytest`](tests/) cobrindo modelos, rotas HTML e API (incluindo a integração externa, mockada com `monkeypatch`) |
 | Análise de dados (opcional) | [`app/analytics.py`](app/analytics.py) usa **pandas** para agregar aulas por mês e por conteúdo; exposto em `/api/estatisticas` e visualizado no Dashboard |
 | Lembrete por e-mail | [`app/services/email.py`](app/services/email.py) envia um e-mail ao aluno (via SMTP, `smtplib` da biblioteca padrão) sempre que uma aula é agendada em `/agenda`, se o aluno tiver e-mail cadastrado e o SMTP estiver configurado |
-| Controle de segurança | Login único do professor ([`app/routes/auth.py`](app/routes/auth.py)) protegendo todas as páginas e a API; proteção CSRF em todos os formulários e requisições `fetch` que alteram dados ([Flask-WTF](https://flask-wtf.readthedocs.io/)); cookies de sessão `HttpOnly`/`SameSite=Lax` |
+| Controle de segurança | Contas de professor com cadastro, login, "esqueci a senha" e redefinição por e-mail ([`app/routes/auth.py`](app/routes/auth.py)), senhas com hash (`werkzeug.security`); protege todas as páginas e a API; proteção CSRF em todos os formulários e requisições `fetch` que alteram dados ([Flask-WTF](https://flask-wtf.readthedocs.io/)); cookies de sessão `HttpOnly`/`SameSite=Lax` |
 
 ## Estrutura do projeto
 
@@ -61,8 +61,8 @@ python run.py
 Acesse `http://127.0.0.1:5000`. O banco SQLite é criado automaticamente em
 `instance/escola.db` na primeira execução.
 
-**Importante:** preencha `LOGIN_USUARIO` e `LOGIN_SENHA` no `.env` antes de
-acessar — sem isso, o sistema fica bloqueado para todo mundo (ver
+Clique em "Acessar sistema" e depois em "Criar conta" para cadastrar seu
+primeiro usuário — não há usuário/senha pré-configurado (ver
 [Sobre o controle de segurança](#sobre-o-controle-de-segurança)).
 
 ## Como rodar os testes
@@ -120,39 +120,40 @@ para as credenciais de teste dele.
 
 ## Sobre o controle de segurança
 
-O sistema fica **inacessível por padrão** até você configurar o login:
+Contas são criadas pelos próprios usuários, direto no sistema — como em
+qualquer site profissional:
 
-```
-LOGIN_USUARIO=seu-usuario
-LOGIN_SENHA=uma-senha-forte
-```
-
-Sem essas duas variáveis no `.env`, ninguém consegue entrar — nem com
-usuário/senha em branco (fail-closed, não fail-open). Com elas
-configuradas:
-
+- **Criar conta**: nome, e-mail e senha (mínimo 8 caracteres). A senha
+  nunca é guardada em texto puro, só o hash (`werkzeug.security`). Ao
+  cadastrar, um e-mail de boas-vindas é enviado (se o SMTP estiver
+  configurado — ver [Sobre o lembrete por e-mail](#sobre-o-lembrete-por-e-mail)).
+- **Esqueci minha senha**: gera um link assinado (`itsdangerous`), válido
+  por 1 hora, enviado por e-mail. A mensagem de confirmação é sempre a
+  mesma, exista ou não uma conta com aquele e-mail — isso evita que
+  alguém descubra quais e-mails estão cadastrados testando um por um.
+- **Entrar/Criar conta/Esqueci a senha não são páginas separadas** — são
+  painéis dentro de um modal embutido na própria landing page (`/`),
+  abertos ao clicar em "Acessar sistema" (ou automaticamente, se você
+  tentar abrir uma página protegida sem estar logado). O link de
+  redefinição de senha do e-mail é a única exceção: abre uma página
+  própria (`/redefinir-senha/<token>`), já que vem de fora do site.
 - Toda página do sistema (dashboard, alunos, agenda, conteúdos,
   acompanhamento) e toda a API exigem login; só a landing pública (`/`) e
   o health-check (`/health`) ficam abertos.
-- O login **não é uma página separada** — é um formulário embutido na
-  própria landing page (`/`), aberto como um modal ao clicar em "Acessar
-  sistema" (ou automaticamente, se você tentar abrir uma página protegida
-  sem estar logado). Isso evita tirar o professor do contexto do site só
-  para autenticar.
 - A sessão é assinada com `SECRET_KEY` e guardada em cookie `HttpOnly` +
   `SameSite=Lax` (não acessível via JavaScript, não enviado em navegação
   cross-site).
 - Todo formulário e toda ação de exclusão via JavaScript carregam um
-  token CSRF (Flask-WTF) — sem ele, a requisição é rejeitada. Isso evita
-  que outro site force seu navegador a cadastrar/excluir dados sem você
-  perceber.
+  token CSRF (Flask-WTF) — sem ele, a requisição é rejeitada.
 - Em produção, defina `SESSION_COOKIE_SECURE=true` (o Render já faz isso
   via `render.yaml`) para o cookie de sessão só trafegar por HTTPS.
 
-Não há tabela de usuários no banco — é um login único, comparado em tempo
-constante (`hmac.compare_digest`) contra as variáveis de ambiente. Simples
-o suficiente para um professor autônomo, sem a complexidade de um sistema
-multiusuário que ninguém vai usar aqui.
+**Importante:** como o cadastro é aberto (qualquer pessoa com o link pode
+criar uma conta), qualquer conta criada enxerga os mesmos dados de
+alunos/aulas — não há isolamento por usuário. Se isso for um problema
+(por exemplo, se o link do sistema circular além de quem deveria ter
+acesso), me avise para adicionarmos um convite/aprovação antes do
+cadastro.
 
 ## Diferenças em relação ao projeto original
 
