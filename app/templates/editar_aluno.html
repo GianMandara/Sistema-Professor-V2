@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Editar aluno · Sistema de Gestão de Aulas{% endblock %}
+{% block titulo_pagina %}Editar aluno{% endblock %}
+
+{% block conteudo %}
+<form method="post" action="{{ url_for('views.editar_aluno', aluno_id=aluno.id) }}" novalidate class="cartao-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="campo">
+    <label for="nome">Nome *</label>
+    <input type="text" id="nome" name="nome" required aria-required="true" value="{{ aluno.nome }}">
+  </div>
+  <div class="campo">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="{{ aluno.email or '' }}">
+  </div>
+  <div class="campo">
+    <label for="telefone">Telefone</label>
+    <input type="tel" id="telefone" name="telefone" value="{{ aluno.telefone or '' }}">
+  </div>
+  <button type="submit">Salvar alterações</button>
+  <a href="{{ url_for('views.alunos') }}" class="botao-secundario">Cancelar</a>
+</form>
+{% endblock %}

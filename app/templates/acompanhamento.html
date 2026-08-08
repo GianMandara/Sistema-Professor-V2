@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Acompanhamento · Sistema de Gestão de Aulas{% endblock %}
+{% block titulo_pagina %}Acompanhamento{% endblock %}
+
+{% block conteudo %}
+<p class="secao-intro">Veja o histórico individual de cada aluno: presença e notas registradas em cada aula.</p>
+
+<section aria-labelledby="titulo-historico-aluno">
+  <h2 id="titulo-historico-aluno" class="visualmente-oculto">Histórico por aluno</h2>
+  <div class="cartao-tabela">
+    <div class="campo campo-selecao-aluno">
+      <label for="seletor-aluno">Selecione um aluno</label>
+      <select id="seletor-aluno">
+        <option value="">Escolha um aluno para ver o histórico</option>
+        {% for aluno in alunos %}
+        <option value="{{ aluno.id }}">{{ aluno.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div id="resumo-historico" class="resumo-historico" hidden>
+      <div class="resumo-item">
+        <span class="resumo-numero" id="resumo-total">0</span>
+        <span>Aulas registradas</span>
+      </div>
+      <div class="resumo-item">
+        <span class="resumo-numero" id="resumo-presencas">0</span>
+        <span>Presenças</span>
+      </div>
+      <div class="resumo-item">
+        <span class="resumo-numero" id="resumo-faltas">0</span>
+        <span>Faltas</span>
+      </div>
+      <div class="resumo-item">
+        <span class="resumo-numero" id="resumo-media">-</span>
+        <span>Média das notas</span>
+      </div>
+    </div>
+
+    <p id="historico-vazio" role="status">Nenhum aluno selecionado ainda.</p>
+
+    <table id="tabela-historico-aluno" hidden>
+      <caption class="visualmente-oculto">Histórico de aulas do aluno selecionado, com presença e nota</caption>
+      <thead>
+        <tr>
+          <th scope="col">Data</th>
+          <th scope="col">Conteúdo</th>
+          <th scope="col">Presença</th>
+          <th scope="col">Nota</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/acompanhamento.js') }}"></script>
+{% endblock %}

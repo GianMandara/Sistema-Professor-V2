@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Conteúdos · Sistema de Gestão de Aulas{% endblock %}
+{% block titulo_pagina %}Conteúdos{% endblock %}
+
+{% block conteudo %}
+<p class="secao-intro">
+  Matérias e tópicos disponíveis para vincular às aulas na página <a href="{{ url_for('views.agenda') }}">Agenda</a>.
+</p>
+
+<section aria-labelledby="titulo-form-conteudo">
+  <h2 id="titulo-form-conteudo">Cadastrar novo conteúdo</h2>
+  <form method="post" action="{{ url_for('views.conteudos') }}" novalidate class="cartao-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="campo">
+      <label for="titulo">Título *</label>
+      <input type="text" id="titulo" name="titulo" required aria-required="true" placeholder="Ex.: Português">
+    </div>
+    <div class="campo">
+      <label for="descricao">Descrição</label>
+      <textarea id="descricao" name="descricao" rows="2" placeholder="Ex.: Gramática, interpretação de texto..."></textarea>
+    </div>
+    <button type="submit">Cadastrar conteúdo</button>
+  </form>
+</section>
+
+<section aria-labelledby="titulo-lista-conteudos">
+  <h2 id="titulo-lista-conteudos">Conteúdos cadastrados</h2>
+  <div class="cartao-tabela">
+  {% if conteudos %}
+  <table id="tabela-conteudos">
+    <caption class="visualmente-oculto">Lista de conteúdos cadastrados com ação de excluir</caption>
+    <thead>
+      <tr>
+        <th scope="col">Título</th>
+        <th scope="col">Descrição</th>
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for conteudo in conteudos %}
+      <tr data-conteudo-id="{{ conteudo.id }}">
+        <td>{{ conteudo.titulo }}</td>
+        <td>{{ conteudo.descricao or "-" }}</td>
+        <td>
+          <form method="post" action="{{ url_for('views.excluir_conteudo', conteudo_id=conteudo.id) }}"
+                class="form-excluir" data-excluir-conteudo="{{ conteudo.id }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="botao-excluir">
+              Excluir<span class="visualmente-oculto"> conteúdo {{ conteudo.titulo }}</span>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>Nenhum conteúdo cadastrado ainda.</p>
+  {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/conteudos.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Editar aula · Sistema de Gestão de Aulas{% endblock %}
+{% block titulo_pagina %}Editar aula{% endblock %}
+
+{% block conteudo %}
+<form method="post" action="{{ url_for('views.editar_aula', aula_id=aula.id) }}" novalidate class="cartao-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="campo">
+    <label for="aluno_id">Aluno *</label>
+    <select id="aluno_id" name="aluno_id" required aria-required="true">
+      {% for aluno in alunos %}
+      <option value="{{ aluno.id }}" {{ "selected" if aluno.id == aula.aluno_id else "" }}>{{ aluno.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label for="conteudo_id">Conteúdo</label>
+    <select id="conteudo_id" name="conteudo_id">
+      <option value="">Sem conteúdo definido</option>
+      {% for conteudo in conteudos %}
+      <option value="{{ conteudo.id }}" {{ "selected" if conteudo.id == aula.conteudo_id else "" }}>{{ conteudo.titulo }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label for="data">Data *</label>
+    <input type="date" id="data" name="data" required aria-required="true" value="{{ aula.data }}">
+  </div>
+  <div class="campo">
+    <label for="horario">Horário *</label>
+    <input type="time" id="horario" name="horario" required aria-required="true" value="{{ aula.horario }}">
+  </div>
+  <div class="campo">
+    <label for="observacoes">Observações</label>
+    <textarea id="observacoes" name="observacoes" rows="3">{{ aula.observacoes or '' }}</textarea>
+  </div>
+
+  <div class="campo">
+    <label for="compareceu">Presença</label>
+    <select id="compareceu" name="compareceu">
+      <option value="" {{ "selected" if aula.compareceu is none else "" }}>Ainda não avaliado</option>
+      <option value="sim" {{ "selected" if aula.compareceu == True else "" }}>Presente</option>
+      <option value="nao" {{ "selected" if aula.compareceu == False else "" }}>Faltou</option>
+    </select>
+  </div>
+  <div class="campo">
+    <label for="nota">Nota (0 a 10)</label>
+    <input type="number" id="nota" name="nota" min="0" max="10" step="0.1"
+           value="{{ aula.nota if aula.nota is not none else '' }}"
+           aria-describedby="ajuda-nota">
+    <small id="ajuda-nota">Deixe em branco se ainda não avaliou esta aula.</small>
+  </div>
+
+  <button type="submit">Salvar alterações</button>
+  <a href="{{ url_for('views.agenda') }}" class="botao-secundario">Cancelar</a>
+</form>
+{% endblock %}

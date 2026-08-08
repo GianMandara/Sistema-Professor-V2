@@ -1,0 +1,253 @@
+/* =========================================================================
+   Landing page — visual exclusivo, independente do "app shell" interno.
+   Reaproveita as variáveis de cor de style.css (mesma identidade de marca).
+   ========================================================================= */
+.pagina-landing { background: var(--bg); }
+
+.landing-largura {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ------------------------------------------------------------------- nav */
+.landing-nav {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.landing-nav .landing-largura {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.marca-landing {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--texto);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.landing-links {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+.landing-links a:not(.btn) {
+  color: var(--texto-suave);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.94rem;
+}
+.landing-links a:not(.btn):hover { color: var(--texto); }
+
+/* ------------------------------------------------------------------- hero */
+.hero {
+  background: linear-gradient(180deg, var(--primaria-suave) 0%, var(--bg) 65%);
+  padding: 4.5rem 0 5rem;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.etiqueta {
+  display: inline-block;
+  background: var(--primaria-suave);
+  color: var(--primaria);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  margin: 0 0 1rem;
+}
+
+.hero-texto h1 {
+  font-size: clamp(2rem, 4vw, 2.9rem);
+  margin: 0 0 1.1rem;
+  font-weight: 800;
+}
+
+.hero-subtitulo {
+  font-size: 1.08rem;
+  color: var(--texto-suave);
+  max-width: 46ch;
+  margin: 0 0 1.8rem;
+}
+
+.hero-acoes { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+
+.btn-grande { padding: 0.85rem 1.6rem; font-size: 1rem; }
+
+.btn-fantasma {
+  color: var(--texto);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.85rem 0.4rem;
+}
+.btn-fantasma:hover { color: var(--primaria); }
+
+.hero-nota { color: var(--texto-suave); font-size: 0.9rem; margin: 0; }
+
+/* mockup decorativo do dashboard (sem imagens externas) */
+.hero-visual { display: flex; justify-content: center; }
+
+.preview-janela {
+  width: 100%;
+  max-width: 420px;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px -20px rgba(16, 24, 40, 0.35);
+  overflow: hidden;
+}
+
+.preview-barra {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+.preview-barra span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--borda);
+}
+
+.preview-corpo { padding: 1.4rem; }
+
+.preview-cartoes { display: flex; gap: 0.8rem; margin-bottom: 1.2rem; }
+.preview-cartao {
+  flex: 1;
+  background: var(--superficie-alt);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.preview-numero { font-size: 1.4rem; font-weight: 700; color: var(--primaria); }
+.preview-cartao span:last-child { font-size: 0.78rem; color: var(--texto-suave); }
+
+.preview-grafico {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  height: 90px;
+  margin-bottom: 1.2rem;
+}
+.preview-grafico span {
+  flex: 1;
+  height: var(--altura);
+  background: var(--primaria);
+  border-radius: 4px 4px 0 0;
+  opacity: 0.85;
+}
+
+.preview-linha { height: 10px; background: var(--superficie-alt); border-radius: 999px; margin-bottom: 0.6rem; }
+.preview-linha-curta { width: 60%; }
+
+/* ------------------------------------------------------- funcionalidades */
+.secao-funcionalidades { padding: 5rem 0; }
+.secao-funcionalidades h2, .secao-como-funciona h2 {
+  font-size: 1.9rem;
+  text-align: center;
+  margin: 0 0 0.6rem;
+}
+.secao-subtitulo {
+  text-align: center;
+  color: var(--texto-suave);
+  max-width: 50ch;
+  margin: 0 auto 3rem;
+}
+
+.grade-funcionalidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.funcionalidade {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 1.6rem;
+  box-shadow: var(--sombra);
+}
+.funcionalidade h3 { margin: 0.9rem 0 0.4rem; font-size: 1.05rem; }
+.funcionalidade p { margin: 0; color: var(--texto-suave); font-size: 0.93rem; }
+
+.funcionalidade-icone {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--primaria-suave);
+  color: var(--primaria);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------- como funciona */
+.secao-como-funciona { background: var(--superficie-alt); padding: 5rem 0; }
+
+.passos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  counter-reset: passo;
+}
+.passos li { text-align: center; }
+.passo-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--primaria);
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.passos h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+.passos p { margin: 0; color: var(--texto-suave); font-size: 0.93rem; max-width: 32ch; margin-inline: auto; }
+
+/* ------------------------------------------------------------------- cta */
+.cta-final {
+  background: linear-gradient(135deg, var(--primaria) 0%, var(--primaria-forte) 100%);
+  padding: 4.5rem 0;
+}
+.cta-final-conteudo { text-align: center; color: #fff; }
+.cta-final h2 { margin: 0 0 0.7rem; font-size: 1.9rem; }
+.cta-final p { margin: 0 0 1.8rem; opacity: 0.92; }
+.btn-claro { background: #fff; color: var(--primaria-forte); }
+.btn-claro:hover { background: #eef1ff; }
+
+/* --------------------------------------------------------------- rodapé */
+.landing-rodape {
+  padding: 2rem 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-visual { order: -1; }
+  .landing-links a:not(.btn) { display: none; }
+}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Agenda · Sistema de Gestão de Aulas{% endblock %}
+{% block titulo_pagina %}Agenda de aulas{% endblock %}
+
+{% block conteudo %}
+<section aria-labelledby="titulo-form-aula">
+  <h2 id="titulo-form-aula">Agendar nova aula</h2>
+  <form method="post" action="{{ url_for('views.agenda') }}" novalidate id="form-agendar" class="cartao-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="campo">
+      <label for="aluno_id">Aluno *</label>
+      <select id="aluno_id" name="aluno_id" required aria-required="true">
+        <option value="">Selecione um aluno</option>
+        {% for aluno in alunos %}
+        <option value="{{ aluno.id }}">{{ aluno.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="campo">
+      <label for="conteudo_id">Conteúdo</label>
+      <select id="conteudo_id" name="conteudo_id">
+        <option value="">Sem conteúdo definido</option>
+        {% for conteudo in conteudos %}
+        <option value="{{ conteudo.id }}">{{ conteudo.titulo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="campo">
+      <label for="data">Data *</label>
+      <input type="date" id="data" name="data" required aria-required="true">
+    </div>
+    <div class="campo">
+      <label for="horario">Horário *</label>
+      <input type="time" id="horario" name="horario" required aria-required="true">
+    </div>
+    <div class="campo">
+      <label for="observacoes">Observações</label>
+      <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+    </div>
+
+    <!-- preenchido via JS ao consultar a API de feriados; role="alert" garante
+         que leitores de tela anunciem o aviso assim que ele aparecer -->
+    <p id="aviso-feriado" role="alert" hidden></p>
+
+    <button type="submit">Agendar aula</button>
+  </form>
+</section>
+
+<section aria-labelledby="titulo-lista-aulas">
+  <h2 id="titulo-lista-aulas">Aulas agendadas</h2>
+  <div class="cartao-tabela">
+  {% if aulas %}
+  <table>
+    <caption class="visualmente-oculto">Lista de aulas agendadas com ações de editar e excluir</caption>
+    <thead>
+      <tr>
+        <th scope="col">Data</th>
+        <th scope="col">Horário</th>
+        <th scope="col">Aluno</th>
+        <th scope="col">Conteúdo</th>
+        <th scope="col">Presença</th>
+        <th scope="col">Nota</th>
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for aula in aulas %}
+      <tr>
+        <td>{{ aula.data }}</td>
+        <td>{{ aula.horario }}</td>
+        <td>{{ aula.aluno.nome if aula.aluno else "-" }}</td>
+        <td>{{ aula.conteudo.titulo if aula.conteudo else "-" }}</td>
+        <td>
+          {% if aula.compareceu is none %}
+            <span class="badge badge-neutro">Pendente</span>
+          {% elif aula.compareceu %}
+            <span class="badge badge-sucesso">Presente</span>
+          {% else %}
+            <span class="badge badge-erro">Faltou</span>
+          {% endif %}
+        </td>
+        <td>{{ aula.nota if aula.nota is not none else "-" }}</td>
+        <td>
+          <a href="{{ url_for('views.editar_aula', aula_id=aula.id) }}">
+            Editar<span class="visualmente-oculto"> aula de {{ aula.aluno.nome if aula.aluno else '' }}</span>
+          </a>
+          <form method="post" action="{{ url_for('views.excluir_aula', aula_id=aula.id) }}" class="form-excluir">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="botao-excluir">
+              Excluir<span class="visualmente-oculto"> aula de {{ aula.aluno.nome if aula.aluno else '' }}</span>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>Nenhuma aula agendada ainda.</p>
+  {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/agenda.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,28 @@
+name: CI
+
+# Executa em todo push e pull request para a branch main, garantindo que
+# nenhuma alteração quebre os testes antes de ser mesclada (controle de
+# versão + integração contínua).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar testes
+        run: pytest -v

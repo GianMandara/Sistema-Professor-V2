@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Sistema de Gestão de Aulas{% endblock %}
+{% block titulo_pagina %}Dashboard{% endblock %}
+
+{% block conteudo %}
+<section class="boas-vindas" aria-labelledby="titulo-boas-vindas">
+  <h2 id="titulo-boas-vindas">{{ saudacao }}!</h2>
+  <p>{{ data_extenso }} &mdash; aqui está o resumo da sua atividade pedagógica.</p>
+</section>
+
+<section aria-labelledby="titulo-indicadores">
+  <h2 id="titulo-indicadores" class="visualmente-oculto">Indicadores gerais</h2>
+  <div class="cartoes-indicadores">
+    <div class="cartao cartao-destaque cartao-destaque-1" role="group" aria-label="Total de alunos cadastrados">
+      <div class="cartao-icone">
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="6.5" r="2.7"/><path d="M2 17c0-3 2.2-5 5-5s5 2 5 5"/><circle cx="15" cy="7.5" r="2.1"/><path d="M12.8 12.3c2.2.2 3.9 2 3.9 4.7"/></svg>
+      </div>
+      <p class="cartao-numero">{{ total_alunos }}</p>
+      <p class="cartao-legenda">Alunos cadastrados</p>
+    </div>
+    <div class="cartao cartao-destaque cartao-destaque-2" role="group" aria-label="Total de aulas registradas">
+      <div class="cartao-icone">
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="4" width="15" height="13" rx="1.5"/><path d="M2.5 8h15"/><path d="M6 2.3v3.2"/><path d="M14 2.3v3.2"/></svg>
+      </div>
+      <p class="cartao-numero">{{ total_aulas }}</p>
+      <p class="cartao-legenda">Aulas registradas</p>
+    </div>
+    <div class="cartao cartao-destaque cartao-destaque-3" role="group" aria-label="Total de conteúdos cadastrados">
+      <div class="cartao-icone">
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3.5 3.8c0-.7.6-1.2 1.3-1.1 2 .2 4 .9 5.2 1.9 1.2-1 3.2-1.7 5.2-1.9.7-.1 1.3.4 1.3 1.1v11c0 .6-.5 1-1 1.1-2.1.2-4.2.9-5.5 1.9-1.3-1-3.4-1.7-5.5-1.9-.5 0-1-.5-1-1.1v-11z"/><path d="M10 4.6v11"/></svg>
+      </div>
+      <p class="cartao-numero">{{ total_conteudos }}</p>
+      <p class="cartao-legenda">Conteúdos cadastrados</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="titulo-proximas">
+  <h2 id="titulo-proximas">Próximas aulas</h2>
+  <div class="cartao-tabela">
+  {% if proximas_aulas %}
+    <table>
+      <caption class="visualmente-oculto">Lista das próximas 5 aulas agendadas</caption>
+      <thead>
+        <tr>
+          <th scope="col">Data</th>
+          <th scope="col">Horário</th>
+          <th scope="col">Aluno</th>
+          <th scope="col">Conteúdo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for aula in proximas_aulas %}
+        <tr>
+          <td>
+            {{ aula.data }}
+            {% if aula.data == hoje_iso %}<span class="badge badge-primaria">Hoje</span>{% endif %}
+          </td>
+          <td>{{ aula.horario }}</td>
+          <td>{{ aula.aluno.nome if aula.aluno else "-" }}</td>
+          <td>{{ aula.conteudo.titulo if aula.conteudo else "-" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="estado-vazio">
+      <svg viewBox="0 0 20 20" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2.5" y="4" width="15" height="13" rx="1.5"/><path d="M2.5 8h15"/><path d="M6 2.3v3.2"/><path d="M14 2.3v3.2"/></svg>
+      <p>Nenhuma aula agendada ainda.</p>
+      <a href="{{ url_for('views.agenda') }}" class="btn">Agendar primeira aula</a>
+    </div>
+  {% endif %}
+  </div>
+</section>
+
+<section aria-labelledby="titulo-graficos">
+  <h2 id="titulo-graficos" class="visualmente-oculto">Gráficos de acompanhamento</h2>
+  <div class="grade-graficos">
+    <div>
+      <h3 class="subtitulo-grafico" id="titulo-grafico-mes">Aulas por mês</h3>
+      <div class="grafico-cartao">
+        <canvas id="grafico-aulas-mes" role="img" aria-describedby="tabela-aulas-mes" width="600" height="260"></canvas>
+        <!-- Tabela acessível equivalente ao gráfico: leitores de tela não
+             interpretam <canvas>, então os mesmos dados ficam disponíveis aqui. -->
+        <table id="tabela-aulas-mes" class="tabela-dados-grafico">
+          <caption>Quantidade de aulas por mês</caption>
+          <thead><tr><th scope="col">Mês</th><th scope="col">Quantidade</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="subtitulo-grafico" id="titulo-grafico-conteudo">Aulas por conteúdo</h3>
+      <div class="grafico-cartao">
+        <canvas id="grafico-aulas-conteudo" role="img" aria-describedby="tabela-aulas-conteudo" width="600" height="260"></canvas>
+        <table id="tabela-aulas-conteudo" class="tabela-dados-grafico">
+          <caption>Quantidade de aulas por conteúdo trabalhado</caption>
+          <thead><tr><th scope="col">Conteúdo</th><th scope="col">Quantidade</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js via CDN, carregado antes do nosso script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

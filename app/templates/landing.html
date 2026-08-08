@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão de Aulas — organize sua rotina pedagógica</title>
+  <meta name="description" content="Sistema web para professores particulares e educadores autônomos gerenciarem alunos, agenda de aulas e conteúdos em um só lugar.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body class="pagina-landing">
+  <a class="skip-link" href="#conteudo-landing">Pular para o conteúdo principal</a>
+
+  <header class="landing-nav">
+    <div class="landing-largura">
+      <a class="marca marca-landing" href="{{ url_for('views.landing') }}">
+        <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" focusable="false">
+          <rect width="24" height="24" rx="7" fill="#3454d1"/>
+          <path d="M12 6.2l7.4 3.35L12 12.9l-7.4-3.35L12 6.2z" fill="#fff"/>
+          <path d="M6.8 11v3.6c0 1.35 2.15 2.5 5.2 2.5s5.2-1.15 5.2-2.5V11" stroke="#fff" stroke-width="1.3" fill="none"/>
+        </svg>
+        <span>Gestão de Aulas</span>
+      </a>
+      <nav aria-label="Navegação da página inicial" class="landing-links">
+        <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="{{ url_for('views.landing', login=1) }}#login" class="btn abrir-login">Acessar sistema</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo-landing">
+    <section class="hero">
+      <div class="landing-largura hero-grid">
+        <div class="hero-texto">
+          <p class="etiqueta">Feito para professores autônomos</p>
+          <h1>Sua rotina pedagógica, organizada em um único lugar.</h1>
+          <p class="hero-subtitulo">
+            Cadastre alunos, monte a agenda de aulas, registre conteúdos e
+            acompanhe sua evolução com indicadores claros — sem planilhas
+            soltas ou cadernos espalhados.
+          </p>
+          <div class="hero-acoes">
+            <a href="{{ url_for('views.landing', login=1) }}#login" class="btn btn-grande abrir-login">Acessar sistema</a>
+            <a href="#funcionalidades" class="btn-fantasma">Ver funcionalidades</a>
+          </div>
+          <p class="hero-nota">
+            {% if total_alunos > 0 %}
+              Já organizando <strong>{{ total_alunos }}</strong> aluno{{ "s" if total_alunos != 1 else "" }} e
+              <strong>{{ total_aulas }}</strong> aula{{ "s" if total_aulas != 1 else "" }} agendada{{ "s" if total_aulas != 1 else "" }}.
+            {% else %}
+              Gratuito, de código aberto e pronto para usar hoje mesmo.
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="preview-janela">
+            <div class="preview-barra">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="preview-corpo">
+              <div class="preview-cartoes">
+                <div class="preview-cartao">
+                  <span class="preview-numero">32</span>
+                  <span>Alunos</span>
+                </div>
+                <div class="preview-cartao">
+                  <span class="preview-numero">128</span>
+                  <span>Aulas</span>
+                </div>
+              </div>
+              <div class="preview-grafico">
+                <span style="--altura: 35%"></span>
+                <span style="--altura: 65%"></span>
+                <span style="--altura: 45%"></span>
+                <span style="--altura: 80%"></span>
+                <span style="--altura: 55%"></span>
+                <span style="--altura: 70%"></span>
+              </div>
+              <div class="preview-linha"></div>
+              <div class="preview-linha preview-linha-curta"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="funcionalidades" class="secao-funcionalidades">
+      <div class="landing-largura">
+        <h2>Tudo que você precisa para dar aula com organização</h2>
+        <p class="secao-subtitulo">Um sistema completo, do cadastro do aluno ao acompanhamento dos resultados.</p>
+
+        <div class="grade-funcionalidades">
+          <article class="funcionalidade">
+            <div class="funcionalidade-icone">
+              <svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="6.5" r="2.7"/><path d="M2 17c0-3 2.2-5 5-5s5 2 5 5"/><circle cx="15" cy="7.5" r="2.1"/><path d="M12.8 12.3c2.2.2 3.9 2 3.9 4.7"/></svg>
+            </div>
+            <h3>Gestão de alunos</h3>
+            <p>Cadastre, edite e acompanhe dados de contato de todos os seus alunos em segundos.</p>
+          </article>
+
+          <article class="funcionalidade">
+            <div class="funcionalidade-icone">
+              <svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="4" width="15" height="13" rx="1.5"/><path d="M2.5 8h15"/><path d="M6 2.3v3.2"/><path d="M14 2.3v3.2"/></svg>
+            </div>
+            <h3>Agenda inteligente</h3>
+            <p>Monte a agenda vinculando aluno, conteúdo, data e horário — tudo em um só formulário.</p>
+          </article>
+
+          <article class="funcionalidade">
+            <div class="funcionalidade-icone">
+              <svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 2.5c-3.6 3-3.6 3-3.6 7 0 2.3 1.6 4.2 3.6 5 2-.8 3.6-2.7 3.6-5 0-4-.0-4-3.6-7z"/><path d="M8.5 10.3 9.6 11.4l2-2.4"/></svg>
+            </div>
+            <h3>Aviso de feriados</h3>
+            <p>Integração com a BrasilAPI avisa automaticamente se a data escolhida cai em feriado nacional.</p>
+          </article>
+
+          <article class="funcionalidade">
+            <div class="funcionalidade-icone">
+              <svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 17V10"/><path d="M9.5 17V4"/><path d="M16 17v-8.5"/><path d="M2 17h16"/></svg>
+            </div>
+            <h3>Análise de dados</h3>
+            <p>Gráficos de aulas por mês e por conteúdo, processados com pandas, para enxergar sua evolução.</p>
+          </article>
+
+          <article class="funcionalidade">
+            <div class="funcionalidade-icone">
+              <svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 2.5 17 5v4.5c0 4.2-2.9 7.4-7 8-4.1-.6-7-3.8-7-8V5l7-2.5z"/><path d="M7.2 10.2l1.9 1.9 3.6-3.9"/></svg>
+            </div>
+            <h3>Acessível para todos</h3>
+            <p>Navegação por teclado, leitores de tela e alto contraste seguindo boas práticas de WCAG.</p>
+          </article>
+
+          <article class="funcionalidade">
+            <div class="funcionalidade-icone">
+              <svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5.5 15.5a3.5 3.5 0 0 1-.6-6.95A4.5 4.5 0 0 1 13.5 7a3.8 3.8 0 0 1 1 7.47"/><path d="M5.5 15.5h9"/></svg>
+            </div>
+            <h3>Acesso pela nuvem</h3>
+            <p>Hospedado na nuvem com banco de dados gerenciado — acesse de qualquer lugar, sem instalar nada.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="como-funciona" class="secao-como-funciona">
+      <div class="landing-largura">
+        <h2>Como funciona</h2>
+        <ol class="passos">
+          <li>
+            <span class="passo-numero">1</span>
+            <h3>Cadastre seus alunos</h3>
+            <p>Nome, email e telefone — o essencial para manter contato organizado.</p>
+          </li>
+          <li>
+            <span class="passo-numero">2</span>
+            <h3>Monte sua agenda</h3>
+            <p>Agende aulas vinculando aluno e conteúdo trabalhado, com aviso automático de feriados.</p>
+          </li>
+          <li>
+            <span class="passo-numero">3</span>
+            <h3>Acompanhe os resultados</h3>
+            <p>Veja gráficos de evolução e indicadores no dashboard e na página de acompanhamento.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="cta-final">
+      <div class="landing-largura cta-final-conteudo">
+        <h2>Pronto para organizar sua rotina de aulas?</h2>
+        <p>Comece a usar agora — é gratuito e leva menos de um minuto para cadastrar seu primeiro aluno.</p>
+        <a href="{{ url_for('views.landing', login=1) }}#login" class="btn btn-grande btn-claro abrir-login">Acessar sistema</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="landing-rodape">
+    <div class="landing-largura">
+      <p>Sistema de Gestão de Aulas para Professor &mdash; projeto educacional, desenvolvido com Flask e Python.</p>
+    </div>
+  </footer>
+
+  <!-- Login embutido na própria landing page: sem navegar para uma URL
+       separada, o professor entra direto por aqui. Sem JavaScript, o link
+       "Acessar sistema" (?login=1) já faz o servidor renderizar isto
+       visível; com JS, main.js intercepta o clique e abre na hora. -->
+  <div id="login" class="login-modal-fundo" role="dialog" aria-modal="true" aria-labelledby="titulo-login" {{ "" if mostrar_login else "hidden" }}>
+    <div class="login-cartao">
+      <button type="button" id="fechar-login" class="login-fechar" aria-label="Fechar formulário de login">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4l12 12M16 4 4 16"/></svg>
+      </button>
+
+      <h2 id="titulo-login">Entrar</h2>
+      <p class="login-subtitulo">Acesso restrito ao professor responsável.</p>
+
+      {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+          <div class="mensagens" aria-live="polite">
+            {% for categoria, mensagem in mensagens %}
+              <p class="mensagem mensagem-{{ categoria }}" role="status">{{ mensagem }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="{{ url_for('auth.login') }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="proximo" value="{{ proximo }}">
+
+        <div class="campo">
+          <label for="usuario">Usuário</label>
+          <input type="text" id="usuario" name="usuario" required aria-required="true" autocomplete="username">
+        </div>
+        <div class="campo">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" required aria-required="true" autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn login-botao">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+</body>
+</html>
