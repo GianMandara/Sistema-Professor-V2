@@ -16,6 +16,13 @@
   --primaria-forte: #24399a;
   --primaria-suave: #e9edfd;
 
+  /* Fundo de botões/áreas sólidas com texto branco em cima — separado de
+     --primaria porque, no modo escuro, --primaria fica claro demais (é
+     pensado para texto/links sobre fundo escuro) e não sustenta 4,5:1 de
+     contraste com texto branco. Ver correção abaixo em [data-tema="escuro"]. */
+  --botao-fundo: var(--primaria);
+  --botao-fundo-hover: var(--primaria-forte);
+
   --acento: #17b897;
 
   --erro: #b3261e;
@@ -42,6 +49,12 @@
   --primaria: #7691ff;
   --primaria-forte: #a9b9ff;
   --primaria-suave: #1c2542;
+
+  /* Texto branco em cima de --primaria (#7691ff) só dá 2,89:1 — abaixo do
+     mínimo de 4,5:1 do WCAG AA. Botões continuam com o azul mais saturado
+     do tema claro, que garante 6,3:1 (fundo) e 9,9:1 (hover) com branco. */
+  --botao-fundo: #3454d1;
+  --botao-fundo-hover: #24399a;
 
   --erro: #ff8a80;
   --erro-bg: #3a1414;
@@ -83,7 +96,7 @@ textarea:focus-visible {
   position: absolute;
   left: -999px;
   top: 0;
-  background: var(--primaria);
+  background: var(--botao-fundo);
   color: #fff;
   padding: 0.75rem 1rem;
   z-index: 200;
@@ -152,7 +165,7 @@ textarea:focus-visible {
 }
 .sidebar nav a:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
 .sidebar nav a.ativo {
-  background: var(--primaria);
+  background: var(--botao-fundo);
   color: var(--sidebar-texto-ativo);
 }
 
@@ -383,7 +396,7 @@ tbody tr:hover { background: var(--superficie-alt); }
 
 /* ------------------------------------------------------------------ botões */
 .btn, button[type="submit"], .botao-secundario {
-  background: var(--primaria);
+  background: var(--botao-fundo);
   color: #fff;
   border: none;
   padding: 0.65rem 1.2rem;
@@ -397,7 +410,7 @@ tbody tr:hover { background: var(--superficie-alt); }
   align-items: center;
   gap: 0.4rem;
 }
-.btn:hover, button[type="submit"]:hover, .botao-secundario:hover { background: var(--primaria-forte); }
+.btn:hover, button[type="submit"]:hover, .botao-secundario:hover { background: var(--botao-fundo-hover); }
 
 .botao-secundario {
   background: transparent;

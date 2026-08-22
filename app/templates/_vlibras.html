@@ -1,0 +1,16 @@
+<!-- Widget oficial do VLibras (Governo Federal) — traduz o conteúdo da
+     página para Língua Brasileira de Sinais (Libras) por meio de um avatar
+     3D. Gratuito e sem necessidade de cadastro/token (diferente do Hand
+     Talk, que exige chave de API paga para uso comercial). Requer acesso a
+     vlibras.gov.br, o mesmo padrão de CDN externo já usado no projeto para
+     o Chart.js e as fontes do Google. -->
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper>
+    <div class="vw-plugin-top-wrapper"></div>
+  </div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script>
+  new window.VLibras.Widget("https://vlibras.gov.br/app");
+</script>

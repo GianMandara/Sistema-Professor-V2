@@ -9,7 +9,7 @@
 
 <section aria-labelledby="titulo-form-conteudo">
   <h2 id="titulo-form-conteudo">Cadastrar novo conteúdo</h2>
-  <form method="post" action="{{ url_for('views.conteudos') }}" novalidate class="cartao-form">
+  <form method="post" action="{{ url_for('views.conteudos') }}" class="cartao-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="campo">
       <label for="titulo">Título *</label>

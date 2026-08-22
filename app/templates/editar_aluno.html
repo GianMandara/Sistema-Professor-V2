@@ -3,7 +3,7 @@
 {% block titulo_pagina %}Editar aluno{% endblock %}
 
 {% block conteudo %}
-<form method="post" action="{{ url_for('views.editar_aluno', aluno_id=aluno.id) }}" novalidate class="cartao-form">
+<form method="post" action="{{ url_for('views.editar_aluno', aluno_id=aluno.id) }}" class="cartao-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="campo">
     <label for="nome">Nome *</label>

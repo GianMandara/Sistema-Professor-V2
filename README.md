@@ -13,7 +13,7 @@ requisitos abaixo. **Este código vive em uma pasta separada
 | Script web (JavaScript) | [`app/static/js/`](app/static/js): `main.js` (tema escuro/claro), `alunos.js` e `agenda.js` (exclusão via `fetch` sem recarregar a página, validação), `acompanhamento.js` (gráficos com Chart.js consumindo a API) |
 | Nuvem | [`render.yaml`](render.yaml) + [`Procfile`](Procfile) para deploy no [Render](https://render.com) (grátis), com banco Postgres gerenciado e endpoint `/health` para health-check |
 | Uso de API | API REST interna em [`app/routes/api.py`](app/routes/api.py) (JSON, consumida pelo JS) **e** integração com API externa pública — [BrasilAPI de feriados](https://brasilapi.com.br/) em [`app/services/feriados.py`](app/services/feriados.py), usada para avisar o professor se a data da aula é feriado |
-| Acessibilidade | Templates em [`app/templates/`](app/templates/): HTML semântico, `lang="pt-br"`, skip-link, `aria-live` para mensagens, `aria-required`, labels associados, foco visível, contraste AA, gráficos com tabela de dados equivalente para leitores de tela. Ver [`app/static/css/style.css`](app/static/css/style.css) |
+| Acessibilidade | HTML semântico, `lang="pt-br"`, skip-link, labels associados, foco visível, contraste AA (claro e escuro), gráficos com tabela de dados equivalente, tradução em Libras (VLibras), navegação completa por teclado com *focus trap* no modal, mensagens de erro anunciadas (`role="alert"`) e movidas para o foco. Ver seção [Sobre acessibilidade](#sobre-acessibilidade) |
 | Controle de versão | Repositório Git próprio, [`.gitignore`](.gitignore), [GitHub Actions CI](.github/workflows/ci.yml) rodando os testes a cada push/PR |
 | Testes | [`pytest`](tests/) cobrindo modelos, rotas HTML e API (incluindo a integração externa, mockada com `monkeypatch`) |
 | Análise de dados (opcional) | [`app/analytics.py`](app/analytics.py) usa **pandas** para agregar aulas por mês e por conteúdo; exposto em `/api/estatisticas` e visualizado no Dashboard |
@@ -154,6 +154,55 @@ alunos/aulas — não há isolamento por usuário. Se isso for um problema
 (por exemplo, se o link do sistema circular além de quem deveria ter
 acesso), me avise para adicionarmos um convite/aprovação antes do
 cadastro.
+
+## Sobre acessibilidade
+
+O sistema segue as diretrizes WCAG 2.1 nível AA. Abaixo, o que foi
+verificado/implementado ponto a ponto:
+
+- **Tradução para Libras (VLibras)**: widget oficial do governo federal
+  embutido em todas as páginas ([`app/templates/_vlibras.html`](app/templates/_vlibras.html)),
+  com avatar 3D que traduz o conteúdo da página. Escolhido em vez do Hand
+  Talk por ser gratuito e não exigir cadastro/token de API. Requer acesso
+  a `vlibras.gov.br` (mesmo padrão de CDN externo já usado para o
+  Chart.js e as fontes do Google).
+- **Texto alternativo em imagens**: o projeto não usa nenhuma tag
+  `<img>` — todo elemento gráfico é SVG inline com `aria-hidden="true"`
+  (puramente decorativo) ou ícones que acompanham texto visível. Se uma
+  `<img>` for adicionada no futuro, ela precisa de um `alt` descritivo.
+- **Navegação por teclado**: todo o site é operável só com Tab/Shift+Tab,
+  Enter e Esc. O modal de login/cadastro/esqueci-senha (`role="dialog"
+  aria-modal="true"`) tem *focus trap* — o Tab não escapa para o conteúdo
+  atrás dele enquanto está aberto — e devolve o foco para quem abriu o
+  modal ao fechar ([`app/static/js/landing.js`](app/static/js/landing.js)).
+- **Contraste de cores**: todos os pares texto/fundo do tema claro e
+  escuro foram medidos (fórmula de luminância relativa do WCAG) e passam
+  de 4,5:1. Foi encontrada e corrigida uma falha real: no modo escuro,
+  texto branco sobre `--primaria` (usado em botões) dava só 2,89:1 —
+  criamos uma variável `--botao-fundo` separada, reaproveitando o azul
+  mais saturado do tema claro (6,3:1 com texto branco), sem alterar a cor
+  usada em links/ícones (que já estava correta).
+- **Fontes escaláveis**: todo `font-size` do CSS usa `rem`/`clamp()`, sem
+  nenhum valor fixo em `px` e sem `html { font-size: ... }` travando a
+  base — o layout acompanha o zoom e a preferência de fonte do navegador
+  sem cortar texto.
+- **Legendas e transcrições**: o sistema não tem nenhum `<video>`/`<audio>`
+  atualmente, então não há conteúdo a legendar. Se algum vídeo/áudio for
+  adicionado no futuro, ele precisa de legenda (vídeo) ou transcrição
+  (áudio).
+- **Estrutura semântica**: `<header>`, `<nav>`, `<main>`, `<footer>` em
+  todas as páginas, um único `<h1>` por página, `<button>` para ações que
+  não navegam e `<a>` para as que navegam.
+- **Formulários claros**: todo campo tem `<label>` associado via `for`/`id`.
+  A validação nativa do HTML5 (`required`, `type="email"`, `minlength`,
+  `pattern`) foi reativada (antes ficava desligada por `novalidate`), o
+  que faz o navegador focar e anunciar automaticamente o campo com erro
+  antes mesmo de enviar o formulário. A confirmação de senha (cadastro e
+  redefinição) é checada em tempo real via `setCustomValidity`
+  ([`app/static/js/validacao-senha.js`](app/static/js/validacao-senha.js)).
+  Erros vindos do servidor usam `role="alert"` (mensagens de sucesso usam
+  `role="status"`) e o foco é movido automaticamente para a mensagem ao
+  recarregar a página ([`app/static/js/foco-erro.js`](app/static/js/foco-erro.js)).
 
 ## Diferenças em relação ao projeto original
 

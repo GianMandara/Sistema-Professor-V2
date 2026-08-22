@@ -5,7 +5,7 @@
 {% block conteudo %}
 <section aria-labelledby="titulo-form-aluno">
   <h2 id="titulo-form-aluno">Cadastrar novo aluno</h2>
-  <form method="post" action="{{ url_for('views.alunos') }}" novalidate class="cartao-form">
+  <form method="post" action="{{ url_for('views.alunos') }}" class="cartao-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="campo">
       <label for="nome">Nome *</label>

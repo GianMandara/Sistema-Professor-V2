@@ -197,9 +197,9 @@
 
       {% with mensagens = get_flashed_messages(with_categories=true) %}
         {% if mensagens %}
-          <div class="mensagens" aria-live="polite">
+          <div class="mensagens" id="mensagens-flash" tabindex="-1" aria-live="polite">
             {% for categoria, mensagem in mensagens %}
-              <p class="mensagem mensagem-{{ categoria }}" role="status">{{ mensagem }}</p>
+              <p class="mensagem mensagem-{{ categoria }}" role="{{ 'alert' if categoria == 'erro' else 'status' }}">{{ mensagem }}</p>
             {% endfor %}
           </div>
         {% endif %}
@@ -210,7 +210,7 @@
         <h2>Entrar</h2>
         <p class="login-subtitulo">Acesse sua conta de professor.</p>
 
-        <form method="post" action="{{ url_for('auth.login') }}" novalidate>
+        <form method="post" action="{{ url_for('auth.login') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="proximo" value="{{ proximo }}">
 
@@ -237,7 +237,7 @@
         <h2>Criar conta</h2>
         <p class="login-subtitulo">Leva menos de um minuto.</p>
 
-        <form method="post" action="{{ url_for('auth.cadastro') }}" novalidate>
+        <form method="post" action="{{ url_for('auth.cadastro') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
           <div class="campo">
@@ -270,7 +270,7 @@
         <h2>Redefinir senha</h2>
         <p class="login-subtitulo">Informe seu e-mail — enviaremos um link para você escolher uma nova senha.</p>
 
-        <form method="post" action="{{ url_for('auth.esqueci_senha') }}" novalidate>
+        <form method="post" action="{{ url_for('auth.esqueci_senha') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
           <div class="campo">
@@ -287,6 +287,10 @@
     </div>
   </div>
 
+  {% include "_vlibras.html" %}
+
   <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validacao-senha.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/foco-erro.js') }}"></script>
 </body>
 </html>

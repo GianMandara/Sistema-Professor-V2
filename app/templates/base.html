@@ -90,10 +90,12 @@
       <main id="conteudo-principal" class="conteudo" tabindex="-1">
         {% with mensagens = get_flashed_messages(with_categories=true) %}
           {% if mensagens %}
-            <!-- aria-live faz leitores de tela anunciarem a mensagem automaticamente -->
-            <div class="mensagens" aria-live="polite">
+            <!-- aria-live faz leitores de tela anunciarem a mensagem automaticamente;
+                 tabindex="-1" + foco via JS (foco-erro.js) garante que quem usa
+                 teclado/leitor de tela perceba o erro assim que a página carrega -->
+            <div class="mensagens" id="mensagens-flash" tabindex="-1" aria-live="polite">
               {% for categoria, mensagem in mensagens %}
-                <p class="mensagem mensagem-{{ categoria }}" role="status">{{ mensagem }}</p>
+                <p class="mensagem mensagem-{{ categoria }}" role="{{ 'alert' if categoria == 'erro' else 'status' }}">{{ mensagem }}</p>
               {% endfor %}
             </div>
           {% endif %}
@@ -110,7 +112,11 @@
 
   <div class="overlay-sidebar" id="overlay-sidebar" hidden></div>
 
+  {% include "_vlibras.html" %}
+
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validacao-senha.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/foco-erro.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
