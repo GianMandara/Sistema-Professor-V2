@@ -53,6 +53,42 @@
     </table>
   </div>
 </section>
+
+<section aria-labelledby="titulo-boletim">
+  <h2 id="titulo-boletim">Boletim mensal</h2>
+  <div class="cartao-form">
+    <p class="secao-intro">
+      Gera o boletim do mês (notas, presença e evolução) e envia por e-mail
+      ao aluno — o mesmo link que ele recebe é mostrado pra você conferir
+      em seguida.
+    </p>
+
+    <form method="post" action="{{ url_for('views.gerar_boletim') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="campo">
+        <label for="boletim-aluno">Aluno</label>
+        <select id="boletim-aluno" name="aluno_id" required aria-required="true">
+          <option value="">Selecione um aluno</option>
+          {% for aluno in alunos %}
+          <option value="{{ aluno.id }}" {{ "disabled" if not aluno.email else "" }}>
+            {{ aluno.nome }}{{ " (sem e-mail cadastrado)" if not aluno.email else "" }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="campo">
+        <label for="boletim-mes">Mês</label>
+        <input type="month" id="boletim-mes" name="mes_ano" required aria-required="true"
+               value="{{ '%04d-%02d'|format(ano_padrao, mes_padrao) }}"
+               aria-describedby="ajuda-boletim-mes">
+        <small id="ajuda-boletim-mes">Pré-selecionado o último mês fechado — pode trocar.</small>
+      </div>
+
+      <button type="submit" class="btn">Gerar e enviar boletim</button>
+    </form>
+  </div>
+</section>
 {% endblock %}
 
 {% block scripts %}

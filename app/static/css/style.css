@@ -313,6 +313,7 @@ section h2 {
 }
 .cartao-destaque-2::before { background: var(--acento); }
 .cartao-destaque-3::before { background: #b25be0; }
+.cartao-destaque-4::before { background: var(--erro); }
 .cartao-destaque-2 .cartao-icone { background: rgba(23, 184, 151, 0.15); color: var(--acento); }
 .cartao-destaque-3 .cartao-icone { background: rgba(178, 91, 224, 0.15); color: #b25be0; }
 

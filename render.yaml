@@ -19,6 +19,13 @@ services:
       # http:// isso quebraria o cookie de sessão.
       - key: SESSION_COOKIE_SECURE
         value: "true"
+      # sync: false (em vez de generateValue) porque precisa ser uma
+      # chave Fernet válida (base64 url-safe de 32 bytes) — gere com
+      # `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
+      # e guarde uma cópia fora do Render também (perder a chave = perder
+      # os dados criptografados para sempre).
+      - key: ENCRYPTION_KEY
+        sync: false
       - key: MAIL_SERVER
         sync: false
       - key: MAIL_USERNAME

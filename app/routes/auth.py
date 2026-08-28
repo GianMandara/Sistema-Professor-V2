@@ -4,14 +4,23 @@ redefinição de senha — como em sites profissionais.
 As senhas nunca são guardadas em texto puro (só o hash, via
 werkzeug.security). O link de redefinição de senha é um token assinado
 com SECRET_KEY (itsdangerous), válido por 1 hora, sem precisar de uma
-tabela extra no banco para guardá-lo.
+tabela extra no banco para guardá-lo. Dados pessoais (nome/e-mail) ficam
+criptografados em repouso — ver app/crypto.py e app/models.py.
 """
+from datetime import datetime
+
 from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
+from ..crypto import calcular_hash_busca
 from ..extensions import db
 from ..models import Usuario
-from ..services.email import enviar_email_boas_vindas, enviar_email_redefinicao_senha
+from ..services.email import (
+    enviar_email_boas_vindas,
+    enviar_email_novo_acesso,
+    enviar_email_redefinicao_senha,
+    enviar_email_tentativa_falha,
+)
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -23,12 +32,29 @@ def _serializer() -> URLSafeTimedSerializer:
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
 
 
+def _buscar_usuario_por_email(email: str) -> Usuario | None:
+    """Localiza a conta pelo e-mail. Com ENCRYPTION_KEY configurada, o
+    e-mail fica criptografado no banco (não dá para fazer
+    "WHERE email = ..." nele) — a busca usa email_hash, um índice
+    determinístico (HMAC) calculado a partir do mesmo e-mail. Sem chave
+    configurada, o e-mail continua em texto puro e a busca direta funciona
+    normalmente."""
+    chave = current_app.config.get("ENCRYPTION_KEY")
+    if chave:
+        return Usuario.query.filter_by(email_hash=calcular_hash_busca(email, chave)).first()
+    return Usuario.query.filter_by(email=email).first()
+
+
 def _destino_seguro(proximo: str | None) -> str:
     """Só permite redirecionar para caminhos internos (evita open redirect
     via ?proximo=https://site-malicioso.com)."""
     if proximo and proximo.startswith("/") and not proximo.startswith("//"):
         return proximo
     return url_for("views.dashboard")
+
+
+def _agora_formatado() -> str:
+    return datetime.now().strftime("%d/%m/%Y às %H:%M")
 
 
 @auth_bp.post("/login")
@@ -39,11 +65,21 @@ def login():
     senha = request.form.get("senha", "")
     proximo = request.form.get("proximo", "")
 
-    usuario = Usuario.query.filter_by(email=email).first()
+    usuario = _buscar_usuario_por_email(email)
+    ip = request.remote_addr or "desconhecido"
+    quando = _agora_formatado()
+
     if usuario and usuario.verificar_senha(senha):
         session.clear()
         session["usuario_id"] = usuario.id
+        enviar_email_novo_acesso(usuario, ip, quando)
         return redirect(_destino_seguro(proximo))
+
+    # Só avisamos por e-mail quando a conta existe de verdade — para um
+    # e-mail que nunca foi cadastrado não há ninguém para notificar (e
+    # notificar mesmo assim revelaria quais contas existem).
+    if usuario:
+        enviar_email_tentativa_falha(usuario, ip, quando)
 
     flash("E-mail ou senha inválidos.", "erro")
     return redirect(url_for("views.landing", login="1", proximo=proximo))
@@ -63,7 +99,7 @@ def cadastro():
         erro = "A senha deve ter pelo menos 8 caracteres."
     elif senha != confirmar_senha:
         erro = "As senhas não coincidem."
-    elif Usuario.query.filter_by(email=email).first():
+    elif _buscar_usuario_por_email(email):
         erro = "Já existe uma conta com esse e-mail."
 
     if erro:
@@ -86,7 +122,7 @@ def cadastro():
 @auth_bp.post("/esqueci-senha")
 def esqueci_senha():
     email = request.form.get("email", "").strip().lower()
-    usuario = Usuario.query.filter_by(email=email).first()
+    usuario = _buscar_usuario_por_email(email)
 
     if usuario:
         token = _serializer().dumps(usuario.email, salt=SALT_REDEFINICAO_SENHA)
@@ -107,7 +143,7 @@ def redefinir_senha(token):
         flash("Este link de redefinição é inválido ou expirou. Solicite um novo.", "erro")
         return redirect(url_for("views.landing", esqueci="1"))
 
-    usuario = Usuario.query.filter_by(email=email).first()
+    usuario = _buscar_usuario_por_email(email)
     if not usuario:
         flash("Conta não encontrada.", "erro")
         return redirect(url_for("views.landing"))

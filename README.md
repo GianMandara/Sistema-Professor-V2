@@ -18,7 +18,8 @@ requisitos abaixo. **Este código vive em uma pasta separada
 | Testes | [`pytest`](tests/) cobrindo modelos, rotas HTML e API (incluindo a integração externa, mockada com `monkeypatch`) |
 | Análise de dados (opcional) | [`app/analytics.py`](app/analytics.py) usa **pandas** para agregar aulas por mês e por conteúdo; exposto em `/api/estatisticas` e visualizado no Dashboard |
 | Lembrete por e-mail | [`app/services/email.py`](app/services/email.py) envia um e-mail ao aluno (via SMTP, `smtplib` da biblioteca padrão) sempre que uma aula é agendada em `/agenda`, se o aluno tiver e-mail cadastrado e o SMTP estiver configurado |
-| Controle de segurança | Contas de professor com cadastro, login, "esqueci a senha" e redefinição por e-mail ([`app/routes/auth.py`](app/routes/auth.py)), senhas com hash (`werkzeug.security`); protege todas as páginas e a API; proteção CSRF em todos os formulários e requisições `fetch` que alteram dados ([Flask-WTF](https://flask-wtf.readthedocs.io/)); cookies de sessão `HttpOnly`/`SameSite=Lax` |
+| Controle de segurança | Contas de professor com cadastro, login, "esqueci a senha" e redefinição por e-mail ([`app/routes/auth.py`](app/routes/auth.py)), senhas com hash (`werkzeug.security`); protege todas as páginas e a API; proteção CSRF ([Flask-WTF](https://flask-wtf.readthedocs.io/)); cookies de sessão `HttpOnly`/`SameSite=Lax`; **criptografia de dados pessoais em repouso** (Fernet, [`app/crypto.py`](app/crypto.py)); **e-mail de notificação em toda tentativa de acesso** (sucesso ou senha errada) |
+| Boletim mensal | [`app/relatorios.py`](app/relatorios.py) monta notas/presença/evolução do aluno num mês; o professor gera pela página de Acompanhamento e o sistema envia um link seguro por e-mail ao aluno — ver [Sobre o boletim mensal](#sobre-o-boletim-mensal) |
 
 ## Estrutura do projeto
 
@@ -148,12 +149,102 @@ qualquer site profissional:
 - Em produção, defina `SESSION_COOKIE_SECURE=true` (o Render já faz isso
   via `render.yaml`) para o cookie de sessão só trafegar por HTTPS.
 
+### Criptografia de dados pessoais em repouso
+
+Como o sistema lida com dados pessoais de professores e alunos, os
+campos mais sensíveis ficam **criptografados dentro do próprio banco de
+dados** (não só protegidos por senha de acesso):
+
+| Campo | Criptografado? | Por quê |
+|---|---|---|
+| `Usuario.nome`, `Usuario.email` | ✅ | Dados pessoais do professor |
+| `Aluno.email`, `Aluno.telefone` | ✅ | Dados pessoais do aluno |
+| `Aula.observacoes` | ✅ | Pode conter informação sensível sobre o aluno |
+| `Aluno.nome` | ❌ (proposital) | Usado para ordenar a listagem alfabética — criptografar quebraria a ordenação |
+
+Implementado em [`app/crypto.py`](app/crypto.py) com **Fernet**
+(AES-128 + HMAC autenticado, da biblioteca `cryptography`), por meio de
+um tipo de coluna do SQLAlchemy (`CampoCriptografado`) que criptografa/
+decripta de forma transparente — o resto do código sempre lê e escreve
+texto puro, a criptografia acontece só na fronteira com o banco.
+
+Como o e-mail do professor precisa ser localizável no login (não dá pra
+fazer `WHERE email = ...` num valor criptografado, que muda a cada
+criptografia), existe uma segunda coluna, `email_hash` — um HMAC-SHA256
+determinístico do e-mail, calculado com uma chave *derivada* da
+`ENCRYPTION_KEY` (nunca a mesma chave usada para criptografar). O login
+busca por esse hash, nunca pelo e-mail em texto puro.
+
+**Configuração — `ENCRYPTION_KEY` no `.env`:**
+```
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+Cole o resultado em `ENCRYPTION_KEY=`. Sem essa variável, tudo continua
+funcionando — só sem a criptografia extra.
+
+⚠️ **Se você perder essa chave, os dados já criptografados ficam
+irrecuperáveis para sempre** — não existe "esqueci a chave" para
+criptografia de verdade, diferente de uma senha. Guarde uma cópia em um
+gerenciador de senhas ou outro lugar seguro, fora do `.env`. Use uma
+chave **diferente** em produção (Render) e em desenvolvimento local.
+
+Bancos criados antes dessa mudança são migrados automaticamente na
+próxima inicialização ([`app/migrations.py`](app/migrations.py),
+`criptografar_dados_legados`) — roda uma vez só, de forma seletiva
+(só quando houver conta sem `email_hash`), sem reescrever o banco a
+cada início da aplicação.
+
+### Notificação de acesso por e-mail
+
+Toda tentativa de entrar numa conta gera um e-mail para o dono dela
+([`app/services/email.py`](app/services/email.py)):
+
+- **Login com sucesso** → "Novo acesso à sua conta", com data/hora e IP.
+  Se não foi o professor, ele sabe na hora que a senha pode estar
+  comprometida.
+- **Senha errada numa conta que existe** → "Tentativa de acesso à sua
+  conta", com os mesmos detalhes — ajuda a perceber tentativas de invasão
+  mesmo quando elas falham.
+- **E-mail que não corresponde a nenhuma conta** → nenhuma notificação
+  (não há dono para avisar, e notificar mesmo assim revelaria quais
+  e-mails têm conta cadastrada).
+
+Assim como os outros e-mails do sistema, isso depende de `MAIL_SERVER`/
+`MAIL_USERNAME` estarem configurados — sem SMTP, o login continua
+funcionando normalmente, só não envia a notificação.
+
 **Importante:** como o cadastro é aberto (qualquer pessoa com o link pode
 criar uma conta), qualquer conta criada enxerga os mesmos dados de
 alunos/aulas — não há isolamento por usuário. Se isso for um problema
 (por exemplo, se o link do sistema circular além de quem deveria ter
 acesso), me avise para adicionarmos um convite/aprovação antes do
 cadastro.
+
+## Sobre o boletim mensal
+
+Como em uma escola, o professor pode gerar um boletim mensal por aluno —
+com notas, presença/faltas e um gráfico de evolução das notas ao longo
+do mês:
+
+1. Na página **Acompanhamento**, seção "Boletim mensal": escolha o aluno
+   e o mês (por padrão já vem selecionado o **último mês fechado** — o
+   anterior ao atual) e clique em "Gerar e enviar boletim".
+2. O sistema monta o boletim daquele mês, calculado na hora a partir das
+   aulas registradas (não é uma foto congelada — se você corrigir uma
+   nota depois, o boletim reflete a correção da próxima vez que for
+   aberto) e **envia por e-mail ao aluno** um link exclusivo.
+3. Você (professor) é levado direto para essa mesma página — a mesma
+   que o aluno vai ver — pra conferir como ficou.
+
+**Como o aluno acessa sem ter conta no sistema:** o link enviado por
+e-mail carrega um token assinado (`itsdangerous`, o mesmo mecanismo do
+"esqueci a senha"), válido por 90 dias — dá pra abrir sem login/senha,
+mas só quem tem o link (ninguém adivinha um token assinado) vê os dados
+daquele aluno naquele mês específico. Passado esse prazo, o link expira
+e é preciso gerar um novo.
+
+Alunos sem e-mail cadastrado ficam desabilitados no seletor da tela —
+cadastre um e-mail em **Alunos** antes de gerar o boletim dele.
 
 ## Sobre acessibilidade
 

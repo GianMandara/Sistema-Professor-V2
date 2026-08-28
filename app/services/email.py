@@ -81,3 +81,50 @@ def enviar_email_redefinicao_senha(usuario, link: str) -> bool:
         "Se não foi você quem pediu isso, ignore este e-mail — sua senha continua a mesma."
     )
     return _enviar(usuario.email, "Redefinição de senha — Sistema de Gestão de Aulas", corpo)
+
+
+def enviar_email_novo_acesso(usuario, ip: str, quando: str) -> bool:
+    """Avisa o professor sempre que a conta dele é acessada com sucesso —
+    se não foi ele, é o primeiro sinal de que a senha pode estar
+    comprometida."""
+    corpo = (
+        f"Olá, {usuario.nome}!\n\n"
+        "Detectamos um novo acesso à sua conta no Sistema de Gestão de Aulas:\n\n"
+        f"Data/hora: {quando}\n"
+        f"Endereço IP: {ip}\n\n"
+        "Se foi você, pode ignorar este e-mail.\n"
+        "Se não foi você, redefina sua senha imediatamente pelo sistema "
+        '("Esqueceu a senha?" na tela de entrada).'
+    )
+    return _enviar(usuario.email, "Novo acesso à sua conta — Sistema de Gestão de Aulas", corpo)
+
+
+def enviar_email_tentativa_falha(usuario, ip: str, quando: str) -> bool:
+    """Avisa o professor quando alguém tenta entrar na conta dele com a
+    senha errada — útil para detectar tentativas de invasão mesmo quando
+    elas não têm sucesso."""
+    corpo = (
+        f"Olá, {usuario.nome}!\n\n"
+        "Alguém tentou acessar sua conta no Sistema de Gestão de Aulas "
+        "com a senha incorreta:\n\n"
+        f"Data/hora: {quando}\n"
+        f"Endereço IP: {ip}\n\n"
+        "Se foi você e só digitou a senha errada, pode ignorar este e-mail.\n"
+        "Se não foi você, considere redefinir sua senha por segurança."
+    )
+    return _enviar(
+        usuario.email, "Tentativa de acesso à sua conta — Sistema de Gestão de Aulas", corpo
+    )
+
+
+def enviar_email_boletim(aluno, nome_mes: str, ano: int, link: str) -> bool:
+    """Envia ao aluno o link do boletim mensal (notas, presença e
+    evolução) — válido por tempo limitado, sem precisar de conta/login."""
+    corpo = (
+        f"Olá, {aluno.nome}!\n\n"
+        f"Seu boletim de {nome_mes}/{ano} já está disponível.\n\n"
+        f"Acesse o link abaixo para ver suas notas, presença e evolução do mês:\n\n"
+        f"{link}\n\n"
+        "Qualquer dúvida, fale com seu professor(a)."
+    )
+    return _enviar(aluno.email, f"Boletim de {nome_mes}/{ano}", corpo)

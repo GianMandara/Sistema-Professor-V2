@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boletim de {{ nome_mes }}/{{ ano }} · {{ aluno.nome }}</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo-boletim">Pular para o conteúdo principal</a>
+
+  <header class="topbar">
+    <a class="marca marca-login" href="#conteudo-boletim">
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+        <rect width="24" height="24" rx="7" fill="#3454d1"/>
+        <path d="M12 6.2l7.4 3.35L12 12.9l-7.4-3.35L12 6.2z" fill="#fff"/>
+        <path d="M6.8 11v3.6c0 1.35 2.15 2.5 5.2 2.5s5.2-1.15 5.2-2.5V11" stroke="#fff" stroke-width="1.3" fill="none"/>
+      </svg>
+      <span>Gestão de Aulas</span>
+    </a>
+    <h1 class="titulo-pagina">Boletim de {{ nome_mes }}/{{ ano }}</h1>
+  </header>
+
+  <main id="conteudo-boletim" class="conteudo" tabindex="-1">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% if mensagens %}
+        <!-- Só aparece pro professor, logo depois de gerar o boletim (fica
+             na sessão dele) — o aluno, abrindo o link em outro navegador,
+             nunca vê essas mensagens. -->
+        <div class="mensagens" id="mensagens-flash" tabindex="-1" aria-live="polite">
+          {% for categoria, mensagem in mensagens %}
+            <p class="mensagem mensagem-{{ categoria }}" role="{{ 'alert' if categoria == 'erro' else 'status' }}">{{ mensagem }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section aria-labelledby="titulo-aluno">
+      <h2 id="titulo-aluno">{{ aluno.nome }}</h2>
+      <p class="secao-intro">
+        Boletim de {{ nome_mes }} de {{ ano }} &mdash; calculado a partir das aulas
+        registradas nesse período. Se seu professor(a) corrigir alguma nota depois,
+        basta reabrir este mesmo link para ver a versão atualizada.
+      </p>
+    </section>
+
+    <section aria-labelledby="titulo-resumo">
+      <h2 id="titulo-resumo" class="visualmente-oculto">Resumo do mês</h2>
+      <div class="cartoes-indicadores">
+        <div class="cartao cartao-destaque cartao-destaque-1" role="group" aria-label="Total de aulas no mês">
+          <p class="cartao-numero">{{ total_aulas }}</p>
+          <p class="cartao-legenda">Aula{{ "s" if total_aulas != 1 else "" }} no mês</p>
+        </div>
+        <div class="cartao cartao-destaque cartao-destaque-2" role="group" aria-label="Presenças no mês">
+          <p class="cartao-numero">{{ presencas }}</p>
+          <p class="cartao-legenda">Presença{{ "s" if presencas != 1 else "" }}</p>
+        </div>
+        <div class="cartao cartao-destaque cartao-destaque-4" role="group" aria-label="Faltas no mês">
+          <p class="cartao-numero">{{ faltas }}</p>
+          <p class="cartao-legenda">Falta{{ "s" if faltas != 1 else "" }}</p>
+        </div>
+        <div class="cartao cartao-destaque cartao-destaque-3" role="group" aria-label="Média das notas no mês">
+          <p class="cartao-numero">{{ media if media is not none else "-" }}</p>
+          <p class="cartao-legenda">Média das notas</p>
+        </div>
+      </div>
+    </section>
+
+    {% if aulas %}
+    <section aria-labelledby="titulo-evolucao">
+      <h2 id="titulo-evolucao">Evolução das notas</h2>
+      {% if notas_evolucao %}
+      <div class="grafico-cartao">
+        <canvas id="grafico-evolucao" role="img" aria-describedby="titulo-detalhes" width="600" height="260"></canvas>
+      </div>
+      {% else %}
+      <div class="cartao-tabela">
+        <p>Nenhuma nota registrada ainda neste mês.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <section aria-labelledby="titulo-detalhes">
+      <h2 id="titulo-detalhes">Aulas do mês</h2>
+      <div class="cartao-tabela">
+        <table>
+          <caption class="visualmente-oculto">Aulas de {{ nome_mes }}/{{ ano }}, com presença e nota</caption>
+          <thead>
+            <tr>
+              <th scope="col">Data</th>
+              <th scope="col">Conteúdo</th>
+              <th scope="col">Presença</th>
+              <th scope="col">Nota</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for aula in aulas %}
+            <tr>
+              <td>{{ aula.data }}</td>
+              <td>{{ aula.conteudo.titulo if aula.conteudo else "-" }}</td>
+              <td>
+                {% if aula.compareceu is none %}
+                  <span class="badge badge-neutro">Pendente</span>
+                {% elif aula.compareceu %}
+                  <span class="badge badge-sucesso">Presente</span>
+                {% else %}
+                  <span class="badge badge-erro">Faltou</span>
+                {% endif %}
+              </td>
+              <td>{{ aula.nota if aula.nota is not none else "-" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% else %}
+    <section aria-labelledby="titulo-vazio">
+      <h2 id="titulo-vazio" class="visualmente-oculto">Sem aulas no mês</h2>
+      <div class="estado-vazio">
+        <p>Nenhuma aula registrada para {{ nome_mes }} de {{ ano }}.</p>
+      </div>
+    </section>
+    {% endif %}
+  </main>
+
+  <footer class="rodape">
+    <p>Sistema de Gestão de Aulas para Professor &mdash; boletim gerado automaticamente.</p>
+  </footer>
+
+  {% include "_vlibras.html" %}
+
+  {% if notas_evolucao %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script>
+    new Chart(document.getElementById("grafico-evolucao"), {
+      type: "line",
+      data: {
+        labels: {{ aulas | selectattr("nota", "ne", none) | map(attribute="data") | list | tojson }},
+        datasets: [{
+          label: "Nota",
+          data: {{ notas_evolucao | tojson }},
+          borderColor: "#3454d1",
+          backgroundColor: "#3454d1",
+          tension: 0.25,
+        }],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false }, title: { display: true, text: "Evolução das notas no mês" } },
+        scales: { y: { beginAtZero: true, suggestedMax: 10 } },
+      },
+    });
+  </script>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='js/foco-erro.js') }}"></script>
+</body>
+</html>

@@ -5,17 +5,29 @@ front-end apenas melhora a experiência (validação, feedback, gráficos).
 """
 from datetime import date, datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, session, url_for
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from ..extensions import db
 from ..models import Aluno, Aula, Conteudo, Usuario
-from ..services.email import enviar_lembrete_aula
+from ..relatorios import montar_boletim, nome_do_mes
+from ..services.email import enviar_email_boletim, enviar_lembrete_aula
 
 views_bp = Blueprint("views", __name__)
 
-# Única página deste blueprint que não exige login — o resto (dashboard,
-# alunos, agenda, conteúdos, acompanhamento) fica atrás de autenticação.
-_ROTAS_PUBLICAS = {"views.landing"}
+# Só a landing e o boletim (aberto pelo aluno via link, sem conta) não
+# exigem login. O resto (dashboard, alunos, agenda, conteúdos,
+# acompanhamento, gerar boletim) fica atrás de autenticação.
+_ROTAS_PUBLICAS = {"views.landing", "views.boletim"}
+
+SALT_BOLETIM = "boletim-mensal"
+VALIDADE_BOLETIM_SEGUNDOS = 60 * 60 * 24 * 90  # 90 dias — bem mais longo
+# que o token de redefinir senha (1h), já que o boletim precisa continuar
+# acessível por um bom tempo depois de enviado.
+
+
+def _serializer_boletim() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
 
 
 @views_bp.before_request
@@ -265,4 +277,76 @@ def acompanhamento():
     """Página de análise de dados: números vêm via fetch em /api/estatisticas
     e /api/alunos/<id>/aulas."""
     alunos = Aluno.query.order_by(Aluno.nome.asc()).all()
-    return render_template("acompanhamento.html", alunos=alunos)
+
+    # Sugere por padrão o último mês já fechado (o mês anterior ao atual)
+    # para o formulário de boletim — o professor pode trocar livremente.
+    hoje = date.today()
+    mes_fechado = hoje.month - 1 or 12
+    ano_fechado = hoje.year if hoje.month > 1 else hoje.year - 1
+
+    return render_template(
+        "acompanhamento.html",
+        alunos=alunos,
+        mes_padrao=mes_fechado,
+        ano_padrao=ano_fechado,
+    )
+
+
+@views_bp.post("/acompanhamento/gerar-boletim")
+def gerar_boletim():
+    """Gera o link do boletim mensal, envia por e-mail ao aluno e leva o
+    professor direto para a mesma página que o aluno vai ver."""
+    aluno = Aluno.query.get_or_404(request.form.get("aluno_id"))
+    mes_ano = request.form.get("mes_ano", "")  # formato do <input type="month">: AAAA-MM
+
+    try:
+        ano_str, mes_str = mes_ano.split("-")
+        ano, mes = int(ano_str), int(mes_str)
+        if not 1 <= mes <= 12:
+            raise ValueError
+    except ValueError:
+        flash("Selecione um mês válido para gerar o boletim.", "erro")
+        return redirect(url_for("views.acompanhamento"))
+
+    if not aluno.email:
+        flash(
+            f"{aluno.nome} não tem e-mail cadastrado — cadastre um e-mail para enviar o boletim.",
+            "erro",
+        )
+        return redirect(url_for("views.acompanhamento"))
+
+    token = _serializer_boletim().dumps(
+        {"aluno_id": aluno.id, "mes": mes, "ano": ano}, salt=SALT_BOLETIM
+    )
+    link = url_for("views.boletim", token=token, _external=True)
+
+    if enviar_email_boletim(aluno, nome_do_mes(mes), ano, link):
+        flash(f"Boletim de {nome_do_mes(mes)}/{ano} enviado para {aluno.nome}.", "sucesso")
+    else:
+        flash(
+            "Boletim gerado, mas não foi possível enviar por e-mail "
+            "(verifique a configuração de e-mail). Veja abaixo como ficou.",
+            "erro",
+        )
+
+    # O professor vê exatamente a mesma página que o aluno recebeu por e-mail.
+    return redirect(url_for("views.boletim", token=token))
+
+
+@views_bp.get("/boletim/<token>")
+def boletim(token):
+    """Página pública do boletim mensal — aberta pelo aluno através do
+    link assinado enviado por e-mail, sem precisar de conta/login."""
+    try:
+        dados_token = _serializer_boletim().loads(
+            token, salt=SALT_BOLETIM, max_age=VALIDADE_BOLETIM_SEGUNDOS
+        )
+    except (BadSignature, SignatureExpired):
+        abort(404)
+
+    aluno = db.session.get(Aluno, dados_token.get("aluno_id"))
+    if not aluno:
+        abort(404)
+
+    dados = montar_boletim(aluno, dados_token["mes"], dados_token["ano"])
+    return render_template("boletim.html", **dados)

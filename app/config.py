@@ -54,6 +54,13 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
 
+    # Criptografia de dados pessoais em repouso (nome do professor, e-mail
+    # e telefone do aluno, observações da aula). Sem essa chave, os campos
+    # continuam funcionando — só ficam sem a camada extra de criptografia.
+    # Gere uma chave com:
+    #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY", "")
+
 
 class TestingConfig(Config):
     TESTING = True
@@ -65,3 +72,7 @@ class TestingConfig(Config):
     # aqui, os testes que precisam dele configuram explicitamente via
     # app.config.update(...) (ver tests/test_email.py).
     MAIL_HABILITADO = False
+
+    # Chave fixa só para os testes rodarem de forma determinística — nunca
+    # usada fora da suíte de testes, não é um segredo de verdade.
+    ENCRYPTION_KEY = "zUcu5O4lFNs_8XmgOwLAb-CaAETsbbEIQur3mwX92hw="

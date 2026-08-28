@@ -54,7 +54,12 @@ def test_cadastro_cria_conta_e_ja_loga(client_anonimo, app):
     assert resposta.headers["Location"] == "/dashboard"
 
     with app.app_context():
-        assert Usuario.query.filter_by(email="beatriz@exemplo.com").first() is not None
+        # o e-mail fica criptografado em repouso — não dá mais para
+        # filtrar direto por ele; a busca de verdade usa email_hash
+        # (ver _buscar_usuario_por_email em auth.py e test_crypto.py)
+        criado = next((u for u in Usuario.query.all() if u.email == "beatriz@exemplo.com"), None)
+        assert criado is not None
+        assert criado.email_hash  # já vem preenchido, sem precisar de migração
 
     # a conta recém-criada já deixa a sessão autenticada
     assert client_anonimo.get("/dashboard").status_code == 200
@@ -155,6 +160,51 @@ def test_login_com_email_inexistente_mostra_erro(client_anonimo):
         "/login", data={"email": "nao-existe@exemplo.com", "senha": "qualquer"}, follow_redirects=True
     )
     assert "E-mail ou senha inválidos." in resposta.get_data(as_text=True)
+
+
+# ------------------------------------------------------- notificação de acesso --
+def test_login_com_sucesso_notifica_novo_acesso_por_email(client_anonimo, app, monkeypatch):
+    with app.app_context():
+        usuario = Usuario(nome="Igor", email="igor-acesso@exemplo.com")
+        usuario.definir_senha("senha-teste-123")
+        db.session.add(usuario)
+        db.session.commit()
+
+    chamadas = []
+    monkeypatch.setattr(
+        auth_module, "enviar_email_novo_acesso", lambda usuario, ip, quando: chamadas.append(usuario.email)
+    )
+
+    client_anonimo.post("/login", data={"email": "igor-acesso@exemplo.com", "senha": "senha-teste-123"})
+    assert chamadas == ["igor-acesso@exemplo.com"]
+
+
+def test_login_com_senha_errada_notifica_tentativa_por_email(client_anonimo, app, monkeypatch):
+    with app.app_context():
+        usuario = Usuario(nome="Julia", email="julia-tentativa@exemplo.com")
+        usuario.definir_senha("senha-teste-123")
+        db.session.add(usuario)
+        db.session.commit()
+
+    chamadas = []
+    monkeypatch.setattr(
+        auth_module, "enviar_email_tentativa_falha", lambda usuario, ip, quando: chamadas.append(usuario.email)
+    )
+
+    client_anonimo.post("/login", data={"email": "julia-tentativa@exemplo.com", "senha": "senha-errada"})
+    assert chamadas == ["julia-tentativa@exemplo.com"]
+
+
+def test_login_com_email_inexistente_nao_notifica_ninguem(client_anonimo, monkeypatch):
+    """Sem conta correspondente, não há quem notificar — e notificar
+    mesmo assim revelaria quais e-mails têm conta."""
+    chamadas = []
+    monkeypatch.setattr(
+        auth_module, "enviar_email_tentativa_falha", lambda usuario, ip, quando: chamadas.append(usuario.email)
+    )
+
+    client_anonimo.post("/login", data={"email": "ninguem-aqui@exemplo.com", "senha": "qualquer"})
+    assert chamadas == []
 
 
 def test_login_respeita_proximo_como_destino_pos_login(client):

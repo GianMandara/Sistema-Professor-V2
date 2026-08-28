@@ -35,11 +35,17 @@ def create_app(testing: bool = False) -> Flask:
 
     with app.app_context():
         from . import models  # noqa: F401  (garante que os modelos sejam registrados)
-        from .migrations import aplicar_migracoes_leves
+        from .migrations import (
+            aplicar_migracoes_leves,
+            criptografar_dados_legados,
+            garantir_indice_unico_email_hash,
+        )
         from .seeds import seed_conteudos_padrao
 
         db.create_all()
         aplicar_migracoes_leves()
+        garantir_indice_unico_email_hash()
+        criptografar_dados_legados()
         seed_conteudos_padrao()
 
     return app
