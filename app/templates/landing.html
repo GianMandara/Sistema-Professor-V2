@@ -7,9 +7,10 @@
   <meta name="description" content="Sistema web para professores particulares e educadores autônomos gerenciarem alunos, agenda de aulas e conteúdos em um só lugar.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/acessibilidade.css') }}">
 </head>
 <body class="pagina-landing">
   <a class="skip-link" href="#conteudo-landing">Pular para o conteúdo principal</a>
@@ -288,9 +289,11 @@
   </div>
 
   {% include "_vlibras.html" %}
+  {% include "_acessibilidade.html" %}
 
   <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
   <script src="{{ url_for('static', filename='js/validacao-senha.js') }}"></script>
   <script src="{{ url_for('static', filename='js/foco-erro.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/acessibilidade.js') }}"></script>
 </body>
 </html>

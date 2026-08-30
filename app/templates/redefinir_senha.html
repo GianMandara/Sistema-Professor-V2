@@ -6,8 +6,9 @@
   <title>Redefinir senha · Sistema de Gestão de Aulas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/acessibilidade.css') }}">
 </head>
 <body class="pagina-login">
   <a class="skip-link" href="#conteudo-redefinir">Pular para o conteúdo principal</a>
@@ -55,8 +56,10 @@
   </main>
 
   {% include "_vlibras.html" %}
+  {% include "_acessibilidade.html" %}
 
   <script src="{{ url_for('static', filename='js/validacao-senha.js') }}"></script>
   <script src="{{ url_for('static', filename='js/foco-erro.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/acessibilidade.js') }}"></script>
 </body>
 </html>

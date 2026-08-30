@@ -7,8 +7,9 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/acessibilidade.css') }}">
 </head>
 <body>
   <a class="skip-link" href="#conteudo-boletim">Pular para o conteúdo principal</a>
@@ -133,6 +134,7 @@
   </footer>
 
   {% include "_vlibras.html" %}
+  {% include "_acessibilidade.html" %}
 
   {% if notas_evolucao %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -159,5 +161,6 @@
   {% endif %}
 
   <script src="{{ url_for('static', filename='js/foco-erro.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/acessibilidade.js') }}"></script>
 </body>
 </html>

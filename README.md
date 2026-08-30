@@ -257,6 +257,9 @@ verificado/implementado ponto a ponto:
   Talk por ser gratuito e não exigir cadastro/token de API. Requer acesso
   a `vlibras.gov.br` (mesmo padrão de CDN externo já usado para o
   Chart.js e as fontes do Google).
+- **Barra de acessibilidade própria** (menu flutuante no canto inferior
+  esquerdo, em todas as páginas) — ver [Sobre a barra de acessibilidade](#sobre-a-barra-de-acessibilidade)
+  logo abaixo.
 - **Texto alternativo em imagens**: o projeto não usa nenhuma tag
   `<img>` — todo elemento gráfico é SVG inline com `aria-hidden="true"`
   (puramente decorativo) ou ícones que acompanham texto visível. Se uma
@@ -294,6 +297,35 @@ verificado/implementado ponto a ponto:
   Erros vindos do servidor usam `role="alert"` (mensagens de sucesso usam
   `role="status"`) e o foco é movido automaticamente para a mensagem ao
   recarregar a página ([`app/static/js/foco-erro.js`](app/static/js/foco-erro.js)).
+
+## Sobre a barra de acessibilidade
+
+Menu flutuante (botão redondo no canto inferior esquerdo, em toda
+página) com 12 ferramentas, todas construídas do zero em HTML/CSS/JS
+próprio — **sem depender de widget de terceiros pago** como o Hand Talk
+(que cobra por token de API para o pacote completo de ferramentas).
+Implementado em [`app/templates/_acessibilidade.html`](app/templates/_acessibilidade.html),
+[`app/static/css/acessibilidade.css`](app/static/css/acessibilidade.css) e
+[`app/static/js/acessibilidade.js`](app/static/js/acessibilidade.js):
+
+| Ferramenta | O que faz |
+|---|---|
+| Aumentar / diminuir fonte | 4 níveis de zoom no texto (até 160%) |
+| Alto contraste | Troca a paleta inteira por preto/branco/amarelo, nas variáveis CSS já usadas em todo o site (mesma técnica do tema escuro) |
+| Fonte legível | Troca para **Atkinson Hyperlegible**, fonte do Braille Institute desenhada para maximizar a diferença entre caracteres parecidos |
+| Espaçar texto | Aumenta espaçamento entre letras, palavras e linhas |
+| Destacar links | Sublinha e contorna todo link — não depende só da cor pra ser percebido |
+| Escala de cinza | Remove toda cor da página (`filter: grayscale`) |
+| Pausar animações | Zera a duração de toda transição/animação CSS na hora, sem precisar mudar configuração do sistema operacional |
+| Cursor ampliado | Cursor customizado, maior que o padrão |
+| Guia de leitura | Barra horizontal destacada que acompanha o mouse verticalmente, ajuda a manter o foco na linha que está sendo lida |
+| Libras | Aciona o VLibras (mesmo widget, só reaproveitado aqui pra ficar tudo num menu só) |
+| Redefinir tudo | Volta todas as ferramentas ao padrão |
+
+Cada preferência fica salva no `localStorage` do navegador (por
+dispositivo, não por conta) e é restaurada automaticamente a cada
+página — funciona igual na landing pública, no boletim que o aluno abre
+sem login, e nas páginas internas do professor.
 
 ## Diferenças em relação ao projeto original
 

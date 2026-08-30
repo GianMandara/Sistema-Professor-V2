@@ -1,0 +1,213 @@
+/* =========================================================================
+   Barra de acessibilidade própria (sem custo, sem widget de terceiros
+   pago). Duas partes: (1) a UI do botão flutuante + painel; (2) as
+   classes utilitárias que cada ferramenta liga/desliga em <html>.
+   ========================================================================= */
+
+/* ------------------------------------------------------------- widget UI */
+#a11y-widget {
+  position: fixed;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 9999;
+}
+
+#a11y-abrir {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--botao-fundo, #3454d1);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+#a11y-abrir:hover { filter: brightness(1.08); }
+
+.a11y-painel {
+  position: absolute;
+  left: 0;
+  bottom: 64px;
+  width: 300px;
+  max-width: calc(100vw - 2.5rem);
+  max-height: min(32rem, calc(100vh - 6rem));
+  overflow-y: auto;
+  background: var(--superficie, #fff);
+  color: var(--texto, #1c2130);
+  border: 1px solid var(--borda, #e3e7f0);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  padding: 1rem;
+}
+.a11y-painel[hidden] { display: none; }
+
+.a11y-painel-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.a11y-painel-cabecalho h2 { margin: 0; font-size: 1.05rem; }
+#a11y-fechar {
+  background: transparent;
+  border: none;
+  color: var(--texto-suave, #5b6472);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+}
+#a11y-fechar:hover { background: var(--superficie-alt, #eef1f8); }
+
+.a11y-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.a11y-botao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--superficie-alt, #eef1f8);
+  border: 1px solid var(--borda, #e3e7f0);
+  border-radius: 10px;
+  padding: 0.65rem 0.4rem;
+  color: var(--texto, #1c2130);
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+}
+.a11y-botao:hover { background: var(--primaria-suave, #e9edfd); }
+.a11y-botao[aria-pressed="true"] {
+  background: var(--primaria, #3454d1);
+  color: #fff;
+  border-color: var(--primaria, #3454d1);
+}
+
+.a11y-botao-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+}
+.a11y-botao-icone-texto { font-weight: 700; font-size: 1rem; }
+.a11y-botao-texto { font-size: 0.72rem; line-height: 1.2; }
+
+.a11y-botao-resetar { grid-column: 1 / -1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .a11y-painel { animation: a11y-aparecer 0.12s ease-out; }
+}
+@keyframes a11y-aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* guia de leitura: barra que acompanha o cursor verticalmente */
+#a11y-guia-leitura-barra {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: rgba(255, 235, 59, 0.35);
+  border-top: 2px solid rgba(255, 179, 0, 0.85);
+  border-bottom: 2px solid rgba(255, 179, 0, 0.85);
+  pointer-events: none;
+  z-index: 9998;
+  top: 0;
+}
+#a11y-guia-leitura-barra[hidden] { display: none; }
+
+/* ------------------------------------------------------ ferramentas ---- */
+
+/* Aumentar/diminuir fonte — escala tudo que usa rem (texto, espaçamento) */
+html.a11y-fonte-1 { font-size: 112%; }
+html.a11y-fonte-2 { font-size: 125%; }
+html.a11y-fonte-3 { font-size: 140%; }
+html.a11y-fonte-4 { font-size: 160%; }
+
+/* Fonte legível: Atkinson Hyperlegible, desenhada pelo Braille Institute
+   especificamente para maximizar a diferenciação entre caracteres. */
+html.a11y-fonte-legivel { --fonte: "Atkinson Hyperlegible", Arial, sans-serif; }
+html.a11y-fonte-legivel body { letter-spacing: 0.01em; }
+
+/* Espaçamento de texto: mais respiro entre linhas/letras/palavras */
+html.a11y-espacamento body {
+  letter-spacing: 0.04em;
+  word-spacing: 0.12em;
+  line-height: 1.9;
+}
+html.a11y-espacamento p,
+html.a11y-espacamento li {
+  margin-bottom: 0.6em;
+}
+
+/* Destacar links: sublinhado + contorno, não depende só da cor */
+html.a11y-links a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  background: rgba(255, 224, 0, 0.25);
+  border-radius: 3px;
+}
+
+/* Escala de cinza */
+html.a11y-escala-cinza { filter: grayscale(100%); }
+
+/* Pausar animações/transições (equivalente a prefers-reduced-motion, mas
+   acionável na hora, sem precisar mudar configuração do sistema) */
+html.a11y-sem-animacao *,
+html.a11y-sem-animacao *::before,
+html.a11y-sem-animacao *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Cursor ampliado (seta preta com contorno branco, ~2x o tamanho padrão) */
+html.a11y-cursor-grande,
+html.a11y-cursor-grande * {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'%3E%3Cpath d='M3 2 L3 19 L7.5 15.5 L10.5 21.5 L13.5 20 L10.5 14 L17 14 Z' fill='black' stroke='white' stroke-width='1.5'/%3E%3C/svg%3E")
+    2 2,
+    auto !important;
+}
+
+/* Alto contraste: substitui a paleta inteira (independente de claro/escuro)
+   por preto/branco/amarelo, redefinindo as mesmas variáveis usadas em todo
+   o site — nenhum componente precisa de regra própria. */
+html.a11y-alto-contraste {
+  --bg: #000000;
+  --superficie: #000000;
+  --superficie-alt: #111111;
+  --texto: #ffffff;
+  --texto-suave: #ffffff;
+  --borda: #ffffff;
+  --primaria: #ffff00;
+  --primaria-forte: #ffff00;
+  --primaria-suave: #333300;
+  --botao-fundo: #ffff00;
+  --botao-fundo-hover: #ffff00;
+  --acento: #00e5ff;
+  --sidebar-bg: #000000;
+  --sidebar-texto: #ffffff;
+  --sidebar-texto-ativo: #ffff00;
+  --erro: #ff6b6b;
+  --erro-bg: #330000;
+  --sucesso: #6bff6b;
+  --sucesso-bg: #003300;
+}
+/* Botões usam texto branco fixo — em fundo amarelo isso fica ilegível, então
+   corrigimos só a cor do texto aqui, sem depender de outra variável. */
+html.a11y-alto-contraste .btn,
+html.a11y-alto-contraste button[type="submit"],
+html.a11y-alto-contraste .sidebar nav a.ativo,
+html.a11y-alto-contraste .skip-link {
+  color: #000000;
+}
